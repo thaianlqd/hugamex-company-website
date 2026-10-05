@@ -166,7 +166,9 @@ export default function HomeHero({ slides }: { slides: Content[] }) {
           </motion.div>
         </AnimatePresence>
         <span className="visual-index">H / {String(active + 1).padStart(2, '0')}</span>
-        <span className="visual-caption">THE ART OF MAKING</span>
+        <span className="visual-caption">
+          {vi ? 'ẢNH MINH HỌA / THE ART OF MAKING' : 'ILLUSTRATIVE / THE ART OF MAKING'}
+        </span>
       </div>
       <a className="hero-scroll" href="#about">
         <ArrowDown size={16} />

@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, MapPin, Search, X } from 'lucide-react';
 import { useState } from 'react';
+import ContentImage from '../common/ContentImage';
+import BrandImage from './BrandImage';
 import LocationMap from './LocationMap';
 import { Reveal, RevealGroup, RevealItem } from '../common/Reveal';
 import type { Content, Site } from '../../types';
@@ -85,6 +87,7 @@ export default function BranchNetwork({ items }: { items: Content[] }) {
       </div>
       <div className="factory-network">
         <Reveal className="factory-network-intro">
+          <BrandImage photo="careers" />
           <div className="eyebrow">HUGAMEX / NETWORK</div>
           <h2>
             {vi
@@ -107,6 +110,15 @@ export default function BranchNetwork({ items }: { items: Content[] }) {
               <article className="factory-network-item">
                 <span className="factory-network-number">{String(n + 1).padStart(2, '0')}</span>
                 <div>
+                  {item.featuredMediaId && (
+                    <ContentImage
+                      className="factory-photo"
+                      src={`${api.defaults.baseURL}/media/${item.featuredMediaId}`}
+                      alt={item.featuredMediaAlt || item.title}
+                      width={900}
+                      height={600}
+                    />
+                  )}
                   <h2>
                     <Link to={`/he-thong/${item.canonicalSlug || item.slug}`}>{item.title}</Link>
                   </h2>

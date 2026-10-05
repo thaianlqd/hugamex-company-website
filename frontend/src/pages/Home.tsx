@@ -1,21 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, MoveRight } from 'lucide-react';
-import { presentationSlides, sectionCopy, sectionOrder } from '../content/sitePresentation';
+import { ArrowUpRight } from 'lucide-react';
+import { presentationSlides, sectionCopy } from '../content/sitePresentation';
 import HomeHero from '../components/public/HomeHero';
-import { Reveal, RevealGroup, RevealItem } from '../components/common/Reveal';
+import BrandImage from '../components/public/BrandImage';
+import CategoryShowcase from '../components/public/CategoryShowcase';
+import CustomerReferences from '../components/public/CustomerReferences';
+import { Reveal } from '../components/common/Reveal';
 import { api } from '../services/api';
 import { ArrowLink, ContentCard, Seo, State } from '../components/common/Shared';
-import type { Content, PageResult, Site } from '../types';
+import type { Content, PageResult } from '../types';
 export default function Home() {
   const { t, i18n } = useTranslation();
   const vi = i18n.language === 'vi';
-  const site = useQuery({
-    queryKey: ['site', i18n.language],
-    queryFn: async () =>
-      (await api.get<Site>('/public/site', { params: { locale: i18n.language } })).data,
-  });
   const news = useQuery({
     queryKey: ['home-news', i18n.language],
     queryFn: async () =>
@@ -25,269 +23,194 @@ export default function Home() {
         })
       ).data,
   });
-  const products = useQuery({
-    queryKey: ['home-products', i18n.language],
-    queryFn: async () =>
-      (
-        await api.get<PageResult<Content>>('/public/products', {
-          params: { locale: i18n.language, size: 6 },
-        })
-      ).data,
-  });
-  const slides = presentationSlides(i18n.language);
-  const featuredNews = news.data?.items;
-  const position = (key: string) => sectionOrder.indexOf(key);
-  const copy = (key: string, fallback: string) => sectionCopy[key]?.[vi ? 2 : 3] || fallback;
-  const visible = (key: string) => sectionOrder.includes(key);
-  const heading = (key: string, fallback: string) => sectionCopy[key]?.[vi ? 0 : 1] || fallback;
+  const copy = (key: string, heading = false) =>
+    sectionCopy[key][heading ? (vi ? 0 : 1) : vi ? 2 : 3];
   return (
     <>
       <Seo title={t('company')} path="/" organization />
-      <HomeHero slides={slides} />
-      <div className="metric-strip">
-        {[
-          ['EXPERIENCE', vi ? 'Kinh nghiệm' : 'Experience'],
-          ['CRAFT', vi ? 'Chuyên môn' : 'Craftsmanship'],
-          ['PROCESS', vi ? 'Quy trình' : 'Process'],
-          ['COMMITMENT', vi ? 'Cam kết' : 'Commitment'],
-        ].map(([en, label]) => (
-          <div key={en}>
-            <strong>{label}</strong>
-            <span>{en}</span>
-          </div>
-        ))}
+      <HomeHero slides={presentationSlides(i18n.language)} />
+      <div className="brand-ribbon">
+        <span>HUU NGHI GARMENT</span>
+        <span>{vi ? 'CHUYÊN MÔN • CHẤT LIỆU • CON NGƯỜI' : 'EXPERTISE • MATERIALS • PEOPLE'}</span>
+        <span>HUGAMEX / VIETNAM</span>
       </div>
-      <div className="home-sections">
-        {visible('about') && (
-          <section style={{ order: position('about') }} id="about" className="section about-grid">
-            <div className="textile-visual">
-              <img
-                src={
-                  site.data?.featured?.about?.[0]?.featuredMediaId
-                    ? `${api.defaults.baseURL}/media/${site.data.featured.about[0].featuredMediaId}`
-                    : site.isPending
-                      ? '/assets/textile-study.svg'
-                      : 'https://images.pexels.com/photos/12362544/pexels-photo-12362544.jpeg?auto=compress&cs=tinysrgb&w=1000'
-                }
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/assets/textile-study.svg';
-                }}
-                alt={
-                  vi ? 'Minh họa cấu trúc chất liệu dệt' : 'Illustration of textile construction'
-                }
-                width="700"
-                height="650"
-                loading="lazy"
-                decoding="async"
-              />
-              <span>01 — MATERIAL & CRAFT</span>
+      <section id="about" className="section brand-split brand-intro">
+        <Reveal className="brand-copy">
+          <div className="eyebrow">01 / HUGAMEX</div>
+          <h2>{copy('about', true)}</h2>
+          <p>{copy('about')}</p>
+          <ArrowLink to="/gioi-thieu">
+            {vi ? 'Câu chuyện doanh nghiệp' : 'Our company story'}
+          </ArrowLink>
+        </Reveal>
+        <BrandImage photo="intro" />
+      </section>
+      <section className="brand-production">
+        <BrandImage photo="production" />
+        <Reveal className="brand-production-copy">
+          <div className="eyebrow">02 / {t('capabilities')}</div>
+          <h2>{copy('manufacturing', true)}</h2>
+          <p>{copy('manufacturing')}</p>
+          <ArrowLink to="/nang-luc-san-xuat">{t('manufacturing')}</ArrowLink>
+        </Reveal>
+      </section>
+      <section className="section brand-activities">
+        <div className="eyebrow">HUGAMEX / {vi ? 'LĨNH VỰC HOẠT ĐỘNG' : 'BUSINESS ACTIVITIES'}</div>
+        <h2>
+          {vi
+            ? 'Từ sản xuất.\nĐến kết nối thương mại.'
+            : 'From manufacturing.\nTo business connections.'}
+        </h2>
+        <div className="activity-lines">
+          {(vi
+            ? [
+                [
+                  '01',
+                  'Sản xuất & xuất nhập khẩu',
+                  'Hàng may mặc, nguyên phụ liệu, máy móc, thiết bị và phụ tùng ngành may.',
+                ],
+                [
+                  '02',
+                  'Không gian & thiết bị',
+                  'Cho thuê nhà xưởng, văn phòng, nhà ở, máy móc và phương tiện vận tải đường bộ.',
+                ],
+                [
+                  '03',
+                  'Phát triển & hợp tác',
+                  'Bất động sản, xây dựng dân dụng, công nghiệp và hợp tác đầu tư trong, ngoài nước.',
+                ],
+              ]
+            : [
+                [
+                  '01',
+                  'Manufacturing & trade',
+                  'Garments, materials, machinery, equipment and garment-industry spare parts.',
+                ],
+                [
+                  '02',
+                  'Spaces & equipment',
+                  'Factory, office, housing, machinery and road-vehicle leasing.',
+                ],
+                [
+                  '03',
+                  'Development & collaboration',
+                  'Real estate, civil and industrial construction, domestic and international investment cooperation.',
+                ],
+              ]
+          ).map(([n, title, description]) => (
+            <div key={n}>
+              <span>{n}</span>
+              <h3>{title}</h3>
+              <p>{description}</p>
             </div>
-            <Reveal className="section-copy">
-              <div className="eyebrow">01 / {t('about')}</div>
-              <h2>
-                {heading(
-                  'about',
-                  vi
-                    ? 'May mặc là chuyên môn.\nCon người là nền tảng.'
-                    : 'Made with expertise.\nBuilt around people.',
-                )}
-              </h2>
-              <p>
-                {copy(
-                  'about',
-                  vi
-                    ? 'Một góc nhìn mới về HUGAMEX: năng lực sản xuất, sự chỉn chu trong từng công đoạn và định hướng hợp tác lâu dài.'
-                    : 'A closer look at HUGAMEX: manufacturing expertise, care at every stage and long-term collaboration.',
-                )}
-              </p>
-              <ArrowLink to="/gioi-thieu">{vi ? 'Câu chuyện HUGAMEX' : 'Our story'}</ArrowLink>
-            </Reveal>
-          </section>
-        )}
-        {visible('manufacturing') && (
-          <section style={{ order: position('manufacturing') }} className="section manufacturing">
-            <Reveal className="section-heading">
-              <div>
-                <div className="eyebrow">02 / {t('capabilities')}</div>
-                <h2>
-                  {heading(
-                    'manufacturing',
-                    vi ? 'Một quy trình.\nTừng chi tiết.' : 'One process.\nEvery detail.',
-                  )}
-                </h2>
-              </div>
-              <ArrowLink to="/nang-luc-san-xuat">{t('manufacturing')}</ArrowLink>
-            </Reveal>
-            <p className="section-intro">
-              {copy(
-                'manufacturing',
-                vi
-                  ? 'Từ lựa chọn chất liệu đến kiểm tra thành phẩm: tìm hiểu những công đoạn tạo nên một sản phẩm may mặc.'
-                  : 'From materials to finished garments: explore the stages of garment production.',
-              )}
-            </p>
-            <RevealGroup className="process">
-              {(vi
-                ? ['Nguyên liệu', 'Cắt', 'May', 'Hoàn thiện', 'Kiểm tra chất lượng', 'Giao hàng']
-                : ['Material', 'Cutting', 'Sewing', 'Finishing', 'Quality control', 'Delivery']
-              ).map((label, i) => (
-                <RevealItem key={label}>
-                  <span>0{i + 1}</span>
-                  <h3>{label}</h3>
-                  <MoveRight size={24} />
-                </RevealItem>
-              ))}
-            </RevealGroup>
-          </section>
-        )}
-        {visible('products') && (
-          <section style={{ order: position('products') }} className="section">
-            <Reveal className="section-heading">
-              <div>
-                <div className="eyebrow">03 / {t('products')}</div>
-                <h2>
-                  {heading(
-                    'products',
-                    vi ? 'Chuyên môn tạo nên\nsự khác biệt.' : 'Expertise in\nevery stitch.',
-                  )}
-                </h2>
-              </div>
-              <ArrowLink to="/san-pham">{t('viewAll')}</ArrowLink>
-            </Reveal>
-            <div className="product-grid">
-              {products.data?.items.length
-                ? products.data.items.map((item) => (
-                    <ContentCard key={item.id} item={item} base="/san-pham" />
-                  ))
-                : (vi
-                    ? ['Áo khoác & outerwear', 'Trang phục thể thao', 'Quần & thời trang']
-                    : ['Jackets & outerwear', 'Sportswear', 'Trousers & fashion']
-                  ).map((label, i) => (
-                    <Link className={`product-study study-${i}`} to="/san-pham" key={label}>
-                      <img
-                        src="/assets/garment-study.svg"
-                        alt=""
-                        width="600"
-                        height="750"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <span>
-                        <small>0{i + 1} / EXPERTISE</small>
-                        <h3>{label}</h3>
-                        <ArrowUpRight size={22} />
-                      </span>
-                    </Link>
-                  ))}
-            </div>
-          </section>
-        )}
-        {visible('branches') && (
-          <section style={{ order: position('branches') }} className="network-section section">
-            <div className="eyebrow">04 / {t('network')}</div>
-            <h2>
-              {heading(
-                'branches',
-                vi
-                  ? 'Kết nối năng lực.\nMở rộng cơ hội.'
-                  : 'Connected expertise.\nShared opportunities.',
-              )}
-            </h2>
-            <p>
-              {copy(
-                'branches',
-                vi
-                  ? 'Tìm hiểu cách kết nối nhu cầu sản phẩm, thông tin kỹ thuật và đầu mối hợp tác.'
-                  : 'Connect product requirements, technical information and collaboration.',
-              )}
-            </p>
-            <ArrowLink to="/he-thong">{t('network')}</ArrowLink>
-            <div className="network-mark" aria-hidden="true">
-              H.
-            </div>
-          </section>
-        )}
-        {visible('quality') && (
-          <section style={{ order: position('quality') }} className="section principles">
-            <div>
-              <div className="eyebrow">05 / QUALITY</div>
-              <h2>{heading('quality', t('certifications'))}</h2>
-              <p>
-                {copy(
-                  'quality',
-                  vi
-                    ? 'Chất lượng bắt đầu từ thông số rõ ràng, mẫu đối chiếu và kiểm tra nhất quán.'
-                    : 'Quality starts with clear specifications, reference samples and consistent checks.',
-                )}
-              </p>
-              <ArrowLink to="/chung-nhan">{t('viewAll')}</ArrowLink>
-            </div>
-            <div>
-              <div className="eyebrow">06 / RESPONSIBILITY</div>
-              <h2>{t('sustainability')}</h2>
-              <p>
-                {vi
-                  ? 'Khám phá những góc nhìn về con người, sử dụng nguồn lực và trách nhiệm trong ngành may.'
-                  : 'Explore people, resource use and responsibility in garment manufacturing.'}
-              </p>
-              <ArrowLink to="/phat-trien-ben-vung">{t('discover')}</ArrowLink>
-            </div>
-          </section>
-        )}
-        {visible('partners') && (
-          <section style={{ order: position('partners') }} className="section partners">
-            <div className="eyebrow">07 / {t('partners')}</div>
-            <h2>
-              {heading(
-                'partners',
-                vi ? 'Cùng xây dựng\ngiá trị lâu dài.' : 'Creating lasting\nvalue together.',
-              )}
-            </h2>
-            <p>
-              {copy(
-                'partners',
-                vi
-                  ? 'Một cuộc trao đổi rõ ràng là khởi đầu cho hợp tác lâu dài. Chia sẻ nhu cầu để cùng tìm hướng đi phù hợp.'
-                  : 'Clear communication starts lasting collaboration. Share your requirements to explore the next steps.',
-              )}
-            </p>
-            <ArrowLink to="/doi-tac">{t('partners')}</ArrowLink>
-          </section>
-        )}
-        {visible('news') && (
-          <section style={{ order: position('news') }} className="section">
-            <Reveal className="section-heading">
-              <div>
-                <div className="eyebrow">08 / JOURNAL</div>
-                <h2>{heading('news', t('news') + ' & ' + (vi ? 'góc nhìn' : 'perspectives'))}</h2>
-              </div>
-              <ArrowLink to="/tin-tuc">{t('viewAll')}</ArrowLink>
-            </Reveal>
-            {featuredNews?.length ? (
-              <div className="article-grid">
-                {featuredNews.map((item) => (
-                  <ContentCard key={item.id} item={item} base="/tin-tuc" />
-                ))}
-              </div>
-            ) : (
-              <State
-                loading={news.isPending}
-                error={news.isError}
-                retry={() => void news.refetch()}
-              />
-            )}
-          </section>
-        )}
-      </div>
-      <section className="contact-cta">
-        <div>
-          <div className="eyebrow">LET’S TALK</div>
-          <h2>{vi ? 'Bắt đầu một\ncuộc trao đổi.' : 'Let’s start\na conversation.'}</h2>
+          ))}
         </div>
-        <Link to="/lien-he" aria-label={t('contact')}>
-          <ArrowUpRight size={62} />
-        </Link>
+        <p className="source-note">
+          {vi
+            ? 'Lĩnh vực được giới thiệu trong tư liệu doanh nghiệp; phạm vi hợp tác được trao đổi theo yêu cầu.'
+            : 'Activities described in company materials; specific collaboration scope is discussed by enquiry.'}
+        </p>
+      </section>
+      <section className="section home-categories">
+        <Reveal className="section-heading">
+          <div>
+            <div className="eyebrow">03 / {t('products')}</div>
+            <h2>
+              {vi
+                ? 'Danh mục rõ ràng.\nSản phẩm đúng nhu cầu.'
+                : 'Explore the category.\nFind the right garment.'}
+            </h2>
+          </div>
+          <ArrowLink to="/san-pham">{t('viewAll')}</ArrowLink>
+        </Reveal>
+        <CategoryShowcase compact limit={4} />
+      </section>
+      <section className="section brand-split brand-network">
+        <BrandImage photo="network" />
+        <Reveal className="brand-copy">
+          <div className="eyebrow">04 / {t('network')}</div>
+          <h2>{copy('branches', true)}</h2>
+          <p>{copy('branches')}</p>
+          <div className="factory-link-list">
+            {['123', '45', '6', '7'].map((n) => (
+              <Link key={n} to={`/he-thong/xi-nghiep-may-${n}`}>
+                <span>
+                  {vi ? 'Xí nghiệp may' : 'Garment factory'} {n}
+                </span>
+                <ArrowUpRight size={18} />
+              </Link>
+            ))}
+          </div>
+          <ArrowLink to="/he-thong">
+            {vi ? 'Trụ sở & hệ thống' : 'Head office & facilities'}
+          </ArrowLink>
+        </Reveal>
+      </section>
+      <section className="section home-customers">
+        <div className="section-heading">
+          <div>
+            <div className="eyebrow">05 / {t('partners')}</div>
+            <h2>
+              {vi
+                ? 'Những kết nối\ntrong hồ sơ doanh nghiệp.'
+                : 'Connections in\nour company records.'}
+            </h2>
+          </div>
+          <ArrowLink to="/doi-tac">
+            {vi ? 'Khách hàng & cơ cấu 2022' : 'Customers & 2022 composition'}
+          </ArrowLink>
+        </div>
+        <CustomerReferences compact />
+      </section>
+      <section className="section brand-split brand-quality">
+        <Reveal className="brand-copy">
+          <div className="eyebrow">06 / {t('certifications')}</div>
+          <h2>
+            {vi
+              ? 'Chất lượng trong chi tiết.\nGiá trị qua thời gian.'
+              : 'Quality in the details.\nValue across time.'}
+          </h2>
+          <p>{copy('quality')}</p>
+          <ArrowLink to="/chung-nhan">
+            {vi ? 'Chứng nhận & giải thưởng' : 'Certificates & awards'}
+          </ArrowLink>
+        </Reveal>
+        <BrandImage photo="quality" />
+      </section>
+      <section className="section home-journal">
+        <div className="section-heading">
+          <div>
+            <div className="eyebrow">07 / HUGAMEX JOURNAL</div>
+            <h2>{copy('news', true)}</h2>
+          </div>
+          <ArrowLink to="/tin-tuc">{t('viewAll')}</ArrowLink>
+        </div>
+        {news.isPending || news.isError ? (
+          <State loading={news.isPending} error={news.isError} retry={() => void news.refetch()} />
+        ) : (
+          <div className="article-grid journal-grid">
+            {news.data?.items.map((item) => (
+              <ContentCard key={item.id} item={item} base="/tin-tuc" />
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="brand-contact">
+        <BrandImage photo="logistics" />
+        <div>
+          <div className="eyebrow">HUGAMEX / {vi ? 'CÙNG HỢP TÁC' : 'WORK WITH US'}</div>
+          <h2>
+            {vi
+              ? 'Ý tưởng của bạn.\nCuộc trao đổi tiếp theo.'
+              : 'Your next idea.\nOur next conversation.'}
+          </h2>
+          <p>
+            {vi
+              ? 'Chia sẻ nhóm sản phẩm, thiết kế và nhu cầu để bắt đầu.'
+              : 'Share your product category, designs and requirements to get started.'}
+          </p>
+          <ArrowLink to="/lien-he">{t('contact')}</ArrowLink>
+        </div>
       </section>
     </>
   );

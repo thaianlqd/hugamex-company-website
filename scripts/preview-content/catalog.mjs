@@ -1,5 +1,6 @@
 // Original editorial preview copy. Owner approval and source audit: docs/CONTENT_SOURCES.md.
 // Titles, prose and translations are imported by the guarded seed tool, never hardcoded in React.
+import { completeBrandContent } from "./brand-completion.mjs";
 import { enrichArticle } from "./article-copy.mjs";
 const doc = (sections) => ({
   type: "doc",
@@ -966,12 +967,15 @@ const replacements = companyProfile(entry);
 const replacedKeys = new Set(
   replacements.map((item) => `${item.resource}/${item.key}`),
 );
-export const catalog = [
-  ...previewCatalog.filter(
-    (item) =>
-      !replacedKeys.has(`${item.resource}/${item.key}`) &&
-      !retiredKeys.includes(`${item.resource}/${item.key}`),
-  ),
-  ...replacements,
-];
+export const catalog = completeBrandContent(
+  [
+    ...previewCatalog.filter(
+      (item) =>
+        !replacedKeys.has(`${item.resource}/${item.key}`) &&
+        !retiredKeys.includes(`${item.resource}/${item.key}`),
+    ),
+    ...replacements,
+  ],
+  entry,
+);
 export const homeCopy = { ...previewHomeCopy, ...profileHomeCopy };

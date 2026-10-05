@@ -1,3 +1,30 @@
+# Latest corporate/editorial verification — 2026-10-05
+
+| Executed check | Final result |
+| --- | --- |
+| `bash scripts/test-backend.sh` | **76 passed**, zero failures/errors/skips; **50 real PostgreSQL integration tests**; Spotless and Maven verify/package passed (23.079 s) |
+| `npm run lint` / `npm run typecheck` | Both passed |
+| `npm run test` | **21 passed**, four files (1.75 s) |
+| `npm run build` / `npm run build:admin` | Both passed; 4.79 s / 4.04 s |
+| `node scripts/preview-content/isolated-admin-qa.mjs --e2e` | **Seven scenarios passed** (59.7 s), real Docker PostgreSQL, file-only email |
+| Isolated CMS read-only capture | **32 layouts, three axe scans**, zero violations/page errors/business writes |
+| `node scripts/preview-content/brand-qa.mjs` | **32 public layouts**, eight main pages at 375/390/768/1440; **20 WCAG A/AA scans**, zero violations/page errors/overflow/business writes |
+| Public photos | **97 image checks**: all loaded, all have alt text, zero fallback substitutions |
+| Guarded Supabase service seed | 43 shared published entities / 86 translations; 11 products, seven product categories; latest pass 15 content operations, repeat pass zero |
+| `bash scripts/verify-supabase.sh postflight` | 18/18 core tables, five successful migrations, RLS/media BYTEA, one active SUPER_ADMIN; read-only passed |
+
+New backend regressions cover server sorting/accent-insensitive product search across pagination and rejection of an unsupported sort, plus dated customer-name/composition validation (100% total, unique labels and bounded format). Existing security, publication/category locks, media, mail/inbox and role/MFA regressions remain. New frontend cases exercise category/sort retention on pagination, debounced server search/reset and readable historical customer composition.
+
+Read-only public interaction checks verify **11 products in seven groups**, category deep links and product breadcrumbs, actual accent-insensitive API search (`so mi` → Sơ mi), six customer names, 2022 composition 40/36/24, historical factory counts and full quality/award references, article desktop/mobile accessibility, VI/EN and mobile-menu Escape. Headquarters map query contains the client-confirmed 636–638 Nguyễn Duy address. The gallery includes full-page and focused section/viewport screenshots; selected desktop/mobile hero, category, production and customer layouts were visually inspected.
+
+The mutating browser suite uses an explicitly guarded Docker database and `MAIL_MODE=file`, never the owner Supabase user/MFA or live SMTP. Seven scenarios cover public layouts/anonymous guard; registration/file OTP/login/refresh/account/password reset; privileged MFA/media/draft/preview/publish/contact inbox; CMS/editor/mobile focus; account/password/security/logout; product-category popup creation/publication/public filtering; and automated accessibility. CMS read-only capture blocks business writes after authentication.
+
+Failed intermediate attempts were corrected and rerun: contrast in footer/filter labels; QA packaging overwriting a live test JAR (the runner now uses its own copy); unbounded Google Maps/lazy-image waits; and a premature debounced-search DOM assertion (now waits for the actual API response and rendered result). Repeated QA MFA attempts hit the normal five-minute limit; the successful rerun occurred after expiry. No rate limit, MFA, access control or accessibility rule was disabled.
+
+Evidence: [public report](qa/brand/report.json), [CMS report](qa/phase2/admin-read-only-smoke.json), [seed summary](qa/phase2/seed-summary.json), [safe verification summary](qa/brand/verification-summary.json), [screenshots](qa/brand/). Private runtime logs, credentials, OTP/TOTP/recovery fixtures and downloaded seed assets remain ignored.
+
+Scope: no live SMTP test, Google OAuth, deployment, DNS, production performance/load/security certification or real-company-photo/certificate verification in this refinement. Historical Lighthouse values below were not rerun. The pooler JDBC requires TLS, but the upstream `pg_stat_ssl=false` observation does not establish end-to-end TLS. Earlier reports below are retained as history.
+
 # Latest content-only CMS follow-up — 2026-10-05
 
 - `bash scripts/test-backend.sh`: **74 passed**, zero failures/errors/skips, final run 21.192 s. Includes **49 PostgreSQL integration tests**. Regressions cover all-role presentation denial, separate product categories/filtering, category/publication validation, durable admin inbox, notification deduplication on repeat processing, SMTP failure/backoff/max-attempt handling and fixed recipient/Reply-To. Category validation takes transaction-scoped shared locks while publication changes take exclusive locks.

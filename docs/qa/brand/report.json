@@ -1,0 +1,932 @@
+{
+  "checkedAt": "2026-10-05T14:39:45.318Z",
+  "layouts": [
+    {
+      "name": "home",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "customers",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "quality",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "news",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "customers",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "quality",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "news",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "customers",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "quality",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "news",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "customers",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "quality",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "news",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "home-390",
+      "violations": []
+    },
+    {
+      "name": "about-390",
+      "violations": []
+    },
+    {
+      "name": "products-390",
+      "violations": []
+    },
+    {
+      "name": "network-390",
+      "violations": []
+    },
+    {
+      "name": "customers-390",
+      "violations": []
+    },
+    {
+      "name": "quality-390",
+      "violations": []
+    },
+    {
+      "name": "news-390",
+      "violations": []
+    },
+    {
+      "name": "contact-390",
+      "violations": []
+    },
+    {
+      "name": "home-1440",
+      "violations": []
+    },
+    {
+      "name": "about-1440",
+      "violations": []
+    },
+    {
+      "name": "products-1440",
+      "violations": []
+    },
+    {
+      "name": "network-1440",
+      "violations": []
+    },
+    {
+      "name": "customers-1440",
+      "violations": []
+    },
+    {
+      "name": "quality-1440",
+      "violations": []
+    },
+    {
+      "name": "news-1440",
+      "violations": []
+    },
+    {
+      "name": "contact-1440",
+      "violations": []
+    },
+    {
+      "name": "product-detail",
+      "violations": []
+    },
+    {
+      "name": "article-desktop",
+      "violations": []
+    },
+    {
+      "name": "article-mobile",
+      "violations": []
+    },
+    {
+      "name": "customers-en",
+      "violations": []
+    }
+  ],
+  "interactions": [
+    "Category deep link → filtered group → product category trail; API search without accents",
+    "Six historical customer names and 2022 composition 40/36/24",
+    "Legacy factory snapshot and certificates/awards with historical context",
+    "Mobile menu keyboard close, VI/EN hero and customer composition, reduced motion"
+  ],
+  "pageErrors": [],
+  "images": [
+    {
+      "name": "home-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/32048352/pexels-photo-32048352.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/14976545/pexels-photo-14976545.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31030917/pexels-photo-31030917.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31019532/pexels-photo-31019532.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5163374/pexels-photo-5163374.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5830661/pexels-photo-5830661.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ff3cb6c8-abe7-458c-88e4-a21ac460f707",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/4487361/pexels-photo-4487361.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "about-390",
+      "images": [
+        {
+          "src": "/api/v1/media/7f240de5-a847-4870-9294-8db7171fe8e9",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/30616038/pexels-photo-30616038.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/6765056/pexels-photo-6765056.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31019593/pexels-photo-31019593.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "products-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/36299788/pexels-photo-36299788.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/04eff957-f1b1-464d-bed5-3894699e31f6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/e056ff10-0b53-4a69-b4ed-e5b5b57566a9",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/9ef8b83f-8437-4710-9772-1043e546087e",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/e0909143-573e-4ae5-8854-e439294c40e5",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/d7074585-bfe9-481d-a161-f47bca5e6884",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "network-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/31019593/pexels-photo-31019593.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "customers-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/30616038/pexels-photo-30616038.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5163374/pexels-photo-5163374.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "quality-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/10558200/pexels-photo-10558200.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/36299788/pexels-photo-36299788.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "news-390",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/7776115/pexels-photo-7776115.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ff3cb6c8-abe7-458c-88e4-a21ac460f707",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/60b0034f-3af8-40d8-a936-a676a7ac0142",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/15188781-c8ca-44bc-ac6f-6beda4a72e8c",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/7302e37e-69c4-4b4f-bb51-af5358b23815",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "contact-390",
+      "images": []
+    },
+    {
+      "name": "home-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/32048352/pexels-photo-32048352.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/14976545/pexels-photo-14976545.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31030917/pexels-photo-31030917.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31019532/pexels-photo-31019532.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5163374/pexels-photo-5163374.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5830661/pexels-photo-5830661.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ff3cb6c8-abe7-458c-88e4-a21ac460f707",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/4487361/pexels-photo-4487361.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "about-1440",
+      "images": [
+        {
+          "src": "/api/v1/media/7f240de5-a847-4870-9294-8db7171fe8e9",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/30616038/pexels-photo-30616038.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/6765056/pexels-photo-6765056.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/31019593/pexels-photo-31019593.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "products-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/36299788/pexels-photo-36299788.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/04eff957-f1b1-464d-bed5-3894699e31f6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/a9e4cbc3-cdcb-4292-a5de-0c409800a7c6",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/2af1bb5f-965c-44f0-afdc-5bbbe346878f",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ee9dca62-494c-4cb7-9122-0e1d65eb17a4",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/e056ff10-0b53-4a69-b4ed-e5b5b57566a9",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/9ef8b83f-8437-4710-9772-1043e546087e",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/e0909143-573e-4ae5-8854-e439294c40e5",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/d7074585-bfe9-481d-a161-f47bca5e6884",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "network-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/31019593/pexels-photo-31019593.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "customers-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/30616038/pexels-photo-30616038.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/5163374/pexels-photo-5163374.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "quality-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/10558200/pexels-photo-10558200.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "https://images.pexels.com/photos/36299788/pexels-photo-36299788.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "news-1440",
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/7776115/pexels-photo-7776115.jpeg?auto=compress&cs=tinysrgb&w=1440",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/ff3cb6c8-abe7-458c-88e4-a21ac460f707",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/60b0034f-3af8-40d8-a936-a676a7ac0142",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/15188781-c8ca-44bc-ac6f-6beda4a72e8c",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/7302e37e-69c4-4b4f-bb51-af5358b23815",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "contact-1440",
+      "images": []
+    },
+    {
+      "name": "product-detail-1440",
+      "images": [
+        {
+          "src": "/api/v1/media/2bc0f202-f05c-48a5-ad9a-5d111f0a63f3",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "article-1440",
+      "images": [
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    },
+    {
+      "name": "article-390",
+      "images": [
+        {
+          "src": "/api/v1/media/05bd5aa4-0b44-40b9-94e7-b689bc3ba599",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        },
+        {
+          "src": "/api/v1/media/f742ae99-1dbd-4309-abd9-aabd8b107b3a",
+          "alt": true,
+          "loaded": true,
+          "fallback": false
+        }
+      ]
+    }
+  ],
+  "mutationsBlocked": 0
+}

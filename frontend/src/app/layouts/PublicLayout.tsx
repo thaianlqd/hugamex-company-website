@@ -22,9 +22,13 @@ export default function PublicLayout() {
   const trigger = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!location.hash) window.scrollTo(0, 0);
+    else
+      window.requestAnimationFrame(() =>
+        document.getElementById(location.hash.slice(1))?.scrollIntoView(),
+      );
     setOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
   useEffect(() => {
     if (open) dialog.current?.showModal();
     else dialog.current?.close();

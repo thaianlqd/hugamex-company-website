@@ -1,5 +1,11 @@
 // Uses the existing Docker QA fixture and MAIL_MODE=file. Never touches Supabase users/MFA.
-import { readFileSync, writeFileSync, openSync, closeSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  openSync,
+  closeSync,
+  copyFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { createHmac } from "node:crypto";
@@ -26,6 +32,8 @@ const dockerEnv = parse(resolve(root, ".env"));
 const fixture = JSON.parse(
   readFileSync(resolve(root, ".local/e2e.json"), "utf8"),
 );
+const qaJar = resolve(root, ".local/isolated-qa-website.jar");
+copyFileSync(resolve(root, "backend/target/website-0.1.0.jar"), qaJar);
 const children = [];
 const files = [];
 function cleanEnvironment(variables) {
@@ -109,11 +117,7 @@ function otp(secret) {
 try {
   child(
     "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin/java",
-    [
-      "-jar",
-      resolve(root, "backend/target/website-0.1.0.jar"),
-      "--server.port=8082",
-    ],
+    ["-jar", qaJar, "--server.port=8082"],
     resolve(root, "backend"),
     {
       ...env,

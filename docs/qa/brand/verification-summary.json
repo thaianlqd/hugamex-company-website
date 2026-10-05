@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-05T14:44:10.291134+00:00",
+  "backend": {
+    "tests": 76,
+    "postgresIntegration": 50,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "spotless": true,
+    "verify": true
+  },
+  "frontend": {
+    "tests": 21,
+    "lint": true,
+    "typecheck": true,
+    "publicBuild": true,
+    "adminBuild": true
+  },
+  "isolatedE2E": {
+    "scenariosPassed": 7,
+    "seconds": 59.7,
+    "database": "Docker PostgreSQL",
+    "mailMode": "file"
+  },
+  "publicQa": {
+    "layouts": 32,
+    "accessibilityScans": 20,
+    "imageChecks": 97,
+    "fallbacks": 0,
+    "violations": 0,
+    "pageErrors": 0,
+    "businessWrites": 0
+  },
+  "cmsQa": {
+    "layouts": 32,
+    "accessibilityScans": 3,
+    "violations": 0,
+    "pageErrors": 0,
+    "businessWrites": 0
+  },
+  "supabase": {
+    "sharedPublishedEntities": 43,
+    "translations": 86,
+    "products": 11,
+    "productCategories": 7,
+    "latestSeedContentOperations": 15,
+    "repeatContentOperations": 0,
+    "postflight": "passed",
+    "tables": 18,
+    "migrations": 5
+  },
+  "liveMailSent": false,
+  "deployed": false
+}

@@ -1,0 +1,152 @@
+{
+  "heroFactory": {
+    "url": "https://images.pexels.com/photos/32048352/pexels-photo-32048352.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/textile-factory-workers-operating-sewing-machines-32048352/",
+    "altVi": "Công nhân trong xưởng dệt may minh họa — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Workers at an illustrative textile factory — illustrative stock, not HUGAMEX documentation"
+  },
+  "intro": {
+    "url": "https://images.pexels.com/photos/14976545/pexels-photo-14976545.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/rolls-of-fabric-14976545/",
+    "altVi": "Cuộn vải và bề mặt chất liệu — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Fabric rolls and material textures — illustrative stock, not HUGAMEX documentation"
+  },
+  "production": {
+    "url": "https://images.pexels.com/photos/31030917/pexels-photo-31030917.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/textile-factory-worker-sewing-in-industrial-setting-31030917/",
+    "altVi": "Thao tác may công nghiệp trong xưởng minh họa — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Industrial sewing in an illustrative factory — illustrative stock, not HUGAMEX documentation"
+  },
+  "network": {
+    "url": "https://images.pexels.com/photos/31019532/pexels-photo-31019532.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/indian-textile-factory-worker-at-sewing-machine-31019532/",
+    "altVi": "Trạm may và nguyên liệu trong xưởng minh họa — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Factory sewing station and garment materials — illustrative stock, not HUGAMEX documentation"
+  },
+  "cooperation": {
+    "url": "https://images.pexels.com/photos/5163374/pexels-photo-5163374.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/men-wearing-dress-shirts-working-together-5163374/",
+    "altVi": "Nhóm làm việc trao đổi hồ sơ hợp tác — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Business team reviewing project documents — illustrative stock, not HUGAMEX documentation"
+  },
+  "quality": {
+    "url": "https://images.pexels.com/photos/5830661/pexels-photo-5830661.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/close-up-of-a-hand-with-scissors-cutting-a-fabric-5830661/",
+    "altVi": "Chi tiết thao tác tạo hình sản phẩm may — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Close view of garment construction — illustrative stock, not HUGAMEX documentation"
+  },
+  "logistics": {
+    "url": "https://images.pexels.com/photos/4487361/pexels-photo-4487361.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/warehouse-workers-carrying-boxes-4487361/",
+    "altVi": "Nhân viên kho xử lý kiện hàng — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Warehouse team handling shipments — illustrative stock, not HUGAMEX documentation"
+  },
+  "history": {
+    "url": "https://images.pexels.com/photos/6765056/pexels-photo-6765056.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/a-tailor-man-cutting-fabric-6765056/",
+    "altVi": "Tay nghề và kinh nghiệm trong nghề may — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Tailoring craft and experience — illustrative stock, not HUGAMEX documentation"
+  },
+  "vision": {
+    "url": "https://images.pexels.com/photos/30616038/pexels-photo-30616038.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/colorful-fabric-rolls-in-sunlit-store-display-30616038/",
+    "altVi": "Ánh sáng trên các cuộn vải may mặc — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Sunlight on a range of garment fabrics — illustrative stock, not HUGAMEX documentation"
+  },
+  "sustainability": {
+    "url": "https://images.pexels.com/photos/37473425/pexels-photo-37473425.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/colorful-fabric-rolls-in-craft-supply-store-37473425/",
+    "altVi": "Minh họa lựa chọn và tái sử dụng chất liệu — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Material reuse and fabric selection illustration — illustrative stock, not HUGAMEX documentation"
+  },
+  "careers": {
+    "url": "https://images.pexels.com/photos/31019593/pexels-photo-31019593.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/textile-factory-worker-sorting-fabric-rolls-31019593/",
+    "altVi": "Nhân viên xưởng sắp xếp nguyên liệu — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "A textile worker organising materials — illustrative stock, not HUGAMEX documentation"
+  },
+  "shirts": {
+    "url": "https://images.pexels.com/photos/9594952/pexels-photo-9594952.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/person-holding-green-dress-shirt-9594952/",
+    "altVi": "Áo sơ mi xanh trên móc treo — ảnh stock minh họa, không phải sản phẩm HUGAMEX",
+    "altEn": "Green button-up shirt on a hanger — illustrative stock, not a HUGAMEX product"
+  },
+  "down": {
+    "url": "https://images.pexels.com/photos/14810197/pexels-photo-14810197.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/man-wearing-a-puffer-jacket-14810197/",
+    "altVi": "Áo khoác phồng mặc ngoài trời — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Puffer jacket worn outdoors — illustrative stock, not HUGAMEX documentation"
+  },
+  "shorts": {
+    "url": "https://images.pexels.com/photos/16390573/pexels-photo-16390573.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/close-up-of-jean-shorts-16390573/",
+    "altVi": "Quần short denim trên giá treo — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Denim shorts on a display rail — illustrative stock, not HUGAMEX documentation"
+  },
+  "children": {
+    "url": "https://images.pexels.com/photos/3933981/pexels-photo-3933981.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/photo-of-baby-wearing-jacket-3933981/",
+    "altVi": "Trẻ nhỏ mặc áo khoác khi đi dạo — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Child wearing a jacket on a walk — illustrative stock, not HUGAMEX documentation"
+  },
+  "cutting": {
+    "url": "https://images.pexels.com/photos/7776115/pexels-photo-7776115.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/tailor-cutting-a-denim-fabric-7776115/",
+    "altVi": "Thao tác cắt vải theo rập — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Pattern and fabric cutting work — illustrative stock, not HUGAMEX documentation"
+  },
+  "finishing": {
+    "url": "https://images.pexels.com/photos/10558200/pexels-photo-10558200.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/man-steam-ironing-shirt-hanging-from-clothing-rack-10558200/",
+    "altVi": "Hoàn thiện áo sơ mi bằng hơi nước — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Steam finishing a shirt — illustrative stock, not HUGAMEX documentation"
+  },
+  "technical": {
+    "url": "https://images.pexels.com/photos/6461112/pexels-photo-6461112.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/a-woman-cutting-a-black-fabric-using-a-pair-of-scissors-6461112/",
+    "altVi": "Chuẩn bị rập và chất liệu may — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Preparing a technical garment pattern — illustrative stock, not HUGAMEX documentation"
+  },
+  "fabricDetail": {
+    "url": "https://images.pexels.com/photos/36299788/pexels-photo-36299788.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/close-up-texture-of-blue-fabric-rolls-36299788/",
+    "altVi": "Chi tiết bề mặt vải màu xanh — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Detail of blue textile textures — illustrative stock, not HUGAMEX documentation"
+  },
+  "fabricColour": {
+    "url": "https://images.pexels.com/photos/34375574/pexels-photo-34375574.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/colorful-fabric-rolls-in-textile-shop-34375574/",
+    "altVi": "Lựa chọn chất liệu và màu vải — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "A selection of fabrics and colourways — illustrative stock, not HUGAMEX documentation"
+  },
+  "sports": {
+    "url": "https://images.pexels.com/photos/6423428/pexels-photo-6423428.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/a-man-wearing-a-durag-and-a-puffer-jacket-6423428/",
+    "altVi": "Trang phục khoác ngoài màu xanh — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Blue outerwear garment — illustrative stock, not HUGAMEX documentation"
+  },
+  "ski": {
+    "url": "https://images.pexels.com/photos/14469824/pexels-photo-14469824.jpeg?auto=compress&cs=tinysrgb&w=1440",
+    "source": "https://www.pexels.com/photo/young-woman-in-a-puffer-jacket-jeans-and-scarf-standing-in-front-of-a-modern-building-in-city-in-winter-14469824/",
+    "altVi": "Minh họa trang phục ngoài trời mùa đông — ảnh stock minh họa, không phải tư liệu HUGAMEX",
+    "altEn": "Winter outerwear illustration — illustrative stock, not HUGAMEX documentation"
+  },
+  "jacket": {
+    "url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1200&q=85&fm=jpg",
+    "source": "https://unsplash.com",
+    "altVi": "Áo khoác da — ảnh stock minh họa, không phải sản phẩm HUGAMEX",
+    "altEn": "Leather jacket — illustrative stock, not a HUGAMEX product"
+  },
+  "sportswear": {
+    "url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85&fm=jpg",
+    "source": "https://unsplash.com",
+    "altVi": "Trang phục có mũ — ảnh stock minh họa, không phải sản phẩm HUGAMEX",
+    "altEn": "Hooded garment — illustrative stock, not a HUGAMEX product"
+  },
+  "trousers": {
+    "url": "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=1200&q=85&fm=jpg",
+    "source": "https://unsplash.com",
+    "altVi": "Quần denim — ảnh stock minh họa, không phải sản phẩm HUGAMEX",
+    "altEn": "Denim trousers — illustrative stock, not a HUGAMEX product"
+  }
+}

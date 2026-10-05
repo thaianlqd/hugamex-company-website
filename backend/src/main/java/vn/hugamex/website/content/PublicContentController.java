@@ -27,9 +27,10 @@ public class PublicContentController {
       @RequestParam(defaultValue = "") String search,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "12") int size,
-      @RequestParam(required = false) UUID category) {
+      @RequestParam(required = false) UUID category,
+      @RequestParam(defaultValue = "featured") String sort) {
     return service.list(
-        ContentService.kind(resource), locale, search, "", page, size, false, category);
+        ContentService.kind(resource), locale, search, "", page, size, false, category, sort);
   }
 
   @GetMapping("/{resource:posts|pages|branches|products|partners|certifications}/{slug}")

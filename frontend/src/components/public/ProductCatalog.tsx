@@ -1,59 +1,82 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal, X, ArrowUpRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import CategoryShowcase, { useProductCategories } from './CategoryShowcase';
 import { api } from '../../services/api';
 import { ContentCard, State } from '../common/Shared';
 import type { Content, PageResult } from '../../types';
-const normalize = (text: string) =>
-  text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .toLowerCase();
 export default function ProductCatalog() {
   const { i18n } = useTranslation();
   const vi = i18n.language === 'vi';
   const [search, setSearch] = useState('');
-  const [group, setGroup] = useState('');
+  const [params, setParams] = useSearchParams();
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash !== '#catalog-results') return;
+    const frame = window.requestAnimationFrame(() =>
+      document.getElementById('catalog-results')?.scrollIntoView(),
+    );
+    return () => window.cancelAnimationFrame(frame);
+  }, [hash, params]);
+  const group = params.get('category') || '';
+  const setGroup = (value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set('category', value);
+    else next.delete('category');
+    setParams(next, { replace: true });
+  };
+  const [term, setTerm] = useState('');
+  useEffect(() => {
+    const timer = window.setTimeout(() => setTerm(search.trim()), 200);
+    return () => window.clearTimeout(timer);
+  }, [search]);
   const [sort, setSort] = useState('featured');
   const [page, setPage] = useState(0);
-  const categories = useQuery({
-    queryKey: ['product-categories', i18n.language],
-    queryFn: async () =>
-      (
-        await api.get<PageResult<Content>>('/public/product-categories', {
-          params: { locale: i18n.language, size: 50 },
-        })
-      ).data,
-  });
+  const categories = useProductCategories();
   const catalog = useQuery({
-    queryKey: ['product-catalog', i18n.language, page, group],
+    queryKey: ['product-catalog', i18n.language, page, group, term, sort],
     queryFn: async () =>
       (
         await api.get<PageResult<Content>>('/public/products', {
-          params: { locale: i18n.language, size: 50, page, category: group || undefined },
+          params: {
+            locale: i18n.language,
+            size: 24,
+            page,
+            category: group || undefined,
+            search: term,
+            sort,
+          },
         })
       ).data,
   });
   const items = catalog.data?.items || [];
-  const filtered = items.filter((item) =>
-    normalize(`${item.title} ${item.excerpt}`).includes(normalize(search.trim())),
+  const filtered = items;
+  const activeCategories = (categories.data?.items || []).filter(
+    (category) => !group || category.id === group,
   );
-  if (sort !== 'featured')
-    filtered.sort(
-      (a, b) => (sort === 'az' ? 1 : -1) * a.title.localeCompare(b.title, i18n.language),
-    );
   const reset = () => {
     setSearch('');
     setGroup('');
     setSort('featured');
+    setPage(0);
   };
   return (
     <section className="catalog" aria-label={vi ? 'Danh mục sản phẩm' : 'Product catalog'}>
-      <div className="catalog-filter">
+      <div className="category-intro">
+        <div className="eyebrow">HUGAMEX / PRODUCT FAMILIES</div>
+        <h2>
+          {vi ? 'Chọn danh mục. Khám phá sản phẩm.' : 'Choose a category. Explore the garments.'}
+        </h2>
+        <p>
+          {vi
+            ? 'Danh mục giới thiệu chuyên môn sản xuất may mặc, để bắt đầu một cuộc trao đổi phù hợp.'
+            : 'A showcase of garment manufacturing expertise, to begin a focused conversation.'}
+        </p>
+      </div>
+      <CategoryShowcase compact limit={4} />
+      <div className="catalog-filter" id="catalog-results">
         <label className="catalog-search" htmlFor="product-search">
           <Search size={19} aria-hidden="true" />
           <span className="sr-only">{vi ? 'Tìm kiếm sản phẩm' : 'Search products'}</span>
@@ -63,7 +86,10 @@ export default function ProductCatalog() {
             maxLength={200}
             placeholder={vi ? 'Tìm tên sản phẩm, chất liệu…' : 'Search products, materials…'}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
           />
         </label>
         <label className="catalog-select">
@@ -92,7 +118,10 @@ export default function ProductCatalog() {
           <select
             aria-label={vi ? 'Sắp xếp' : 'Sort by'}
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            onChange={(e) => {
+              setSort(e.target.value);
+              setPage(0);
+            }}
           >
             <option value="featured">{vi ? 'Theo giới thiệu' : 'Featured order'}</option>
             <option value="az">{vi ? 'Tên: A → Z' : 'Name: A → Z'}</option>
@@ -101,9 +130,9 @@ export default function ProductCatalog() {
         </label>
       </div>
       <div className="catalog-summary">
-        <h2>{vi ? 'Khám phá nhóm sản phẩm' : 'Explore product groups'}</h2>
+        <h2>{vi ? 'Sản phẩm theo danh mục' : 'Products by category'}</h2>
         <p role="status">
-          {vi ? `${filtered.length} nhóm sản phẩm` : `${filtered.length} product groups`}
+          {vi ? `${catalog.data?.total || 0} sản phẩm` : `${catalog.data?.total || 0} products`}
         </p>
         {(search || group || sort !== 'featured') && (
           <button onClick={reset}>
@@ -119,10 +148,37 @@ export default function ProductCatalog() {
           retry={() => void catalog.refetch()}
         />
       ) : filtered.length ? (
-        <div className="article-grid catalog-grid">
-          {filtered.map((item) => (
-            <ContentCard key={item.id} item={item} base="/san-pham" />
-          ))}
+        <div className="catalog-groups">
+          {activeCategories.map((category) => {
+            const products = filtered.filter((item) => item.categoryIds.includes(category.id));
+            if (!products.length) return null;
+            return (
+              <section key={category.id} className="catalog-category">
+                <div className="catalog-category-heading">
+                  <div>
+                    <span className="eyebrow">{vi ? 'DANH MỤC' : 'CATEGORY'}</span>
+                    <h2>{category.title}</h2>
+                    <p>{category.excerpt}</p>
+                  </div>
+                  <span>
+                    {products.length} {vi ? 'sản phẩm trên trang' : 'products on this page'}
+                  </span>
+                </div>
+                <div className="article-grid catalog-grid">
+                  {products.map((item) => (
+                    <ContentCard key={item.id} item={item} base="/san-pham" />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+          {categories.isPending || categories.isError ? (
+            <State
+              loading={categories.isPending}
+              error={categories.isError}
+              retry={() => void categories.refetch()}
+            />
+          ) : null}
         </div>
       ) : (
         <div className="public-empty">
@@ -137,25 +193,23 @@ export default function ProductCatalog() {
           </button>
         </div>
       )}
-      {!!catalog.data && catalog.data.total > 50 && (
+      {!!catalog.data && catalog.data.total > 24 && (
         <div className="pagination">
           <button
             disabled={!page}
             onClick={() => {
               setPage(page - 1);
-              reset();
             }}
           >
             {vi ? 'Trước' : 'Previous'}
           </button>
           <span>
-            {page + 1} / {Math.ceil(catalog.data.total / 50)}
+            {page + 1} / {Math.ceil(catalog.data.total / 24)}
           </span>
           <button
-            disabled={(page + 1) * 50 >= catalog.data.total}
+            disabled={(page + 1) * 24 >= catalog.data.total}
             onClick={() => {
               setPage(page + 1);
-              reset();
             }}
           >
             {vi ? 'Tiếp' : 'Next'}

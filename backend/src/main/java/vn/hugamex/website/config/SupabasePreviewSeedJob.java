@@ -43,6 +43,7 @@ public class SupabasePreviewSeedJob implements ApplicationRunner {
   private Actor actor;
   private final Map<String, UUID> ids = new LinkedHashMap<>();
   private int writes;
+  private JsonNode photoFiles;
 
   public SupabasePreviewSeedJob(
       ContentService content,
@@ -80,6 +81,7 @@ public class SupabasePreviewSeedJob implements ApplicationRunner {
       if (!target.equals(manifest.path("targetFingerprint").asText())
           || manifest.path("version").asInt() != 1)
         throw new IllegalStateException("Manifest target or version mismatch.");
+      photoFiles = manifest.path("photoFiles");
       UUID owner = UUID.fromString(manifest.path("actorId").asText());
       if (!Boolean.TRUE.equals(
           db.queryForObject(
@@ -202,7 +204,8 @@ public class SupabasePreviewSeedJob implements ApplicationRunner {
       body.put("seoDescription", body.path("excerpt").asText());
       if (image == null) body.putNull("featuredMediaId");
       else body.put("featuredMediaId", image.toString());
-      body.put("featured", resource.equals("hero-slides"));
+      body.put(
+          "featured", resource.equals("hero-slides") || spec.path("featured").asBoolean(false));
       body.set("metadata", spec.path("metadata"));
       ArrayNode categories = body.putArray("categoryIds");
       if (spec.path("category").isTextual())
@@ -259,12 +262,20 @@ public class SupabasePreviewSeedJob implements ApplicationRunner {
   }
 
   private UUID image(String key) throws Exception {
+    JsonNode photo = photoFiles.path(key);
+    if (!key.matches("[a-zA-Z0-9-]{1,60}"))
+      throw new IllegalArgumentException("Invalid photo key.");
     String number =
         switch (key) {
           case "sewing" -> "5830692";
           case "textile" -> "12362544";
           case "jacket", "sportswear", "trousers" -> key;
-          default -> throw new IllegalArgumentException("Unsupported preview photo.");
+          default -> {
+            if (!photo.isObject()
+                || !("preview-stock-" + key + ".jpg").equals(photo.path("file").asText()))
+              throw new IllegalArgumentException("Unsupported preview photo.");
+            yield key;
+          }
         };
     if (state.path("media").has(key)) {
       UUID id = UUID.fromString(state.path("media").path(key).asText());
@@ -280,6 +291,7 @@ public class SupabasePreviewSeedJob implements ApplicationRunner {
           case "trousers" -> "Ảnh stock minh họa quần; không phải sản phẩm HUGAMEX";
           default -> "Ảnh minh họa chất liệu; ảnh stock, không phải tư liệu HUGAMEX";
         };
+    if (photo.has("alt")) alt = photo.path("alt").asText();
     var result =
         media.upload(new PreviewFile("stock-" + number + ".jpg", bytes), alt, true, actor.id());
     state.withObject("media").put(key, result.id().toString());

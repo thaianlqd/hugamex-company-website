@@ -1,12 +1,13 @@
 // Website presentation is developer-owned. Edit this file to change hero/copy/section order.
+import photos from './stockPhotos.json';
 import type { Content } from '../types';
 export const sectionOrder = [
   'about',
   'manufacturing',
   'products',
   'branches',
-  'quality',
   'partners',
+  'quality',
   'news',
 ];
 export const sectionCopy: Record<string, string[]> = {
@@ -62,8 +63,7 @@ const heroCopy = [
     excerptEn: 'HUGAMEX — Huu Nghi Garment. Explore garment products and perspectives.',
     metadata: {
       link: '/gioi-thieu',
-      externalImageUrl:
-        'https://images.pexels.com/photos/5830692/pexels-photo-5830692.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      externalImageUrl: photos.heroFactory.url,
     },
   },
   {
@@ -74,8 +74,7 @@ const heroCopy = [
     excerptEn: 'From fabric construction to the stages that shape a garment.',
     metadata: {
       link: '/nang-luc-san-xuat',
-      externalImageUrl:
-        'https://images.pexels.com/photos/12362544/pexels-photo-12362544.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      externalImageUrl: photos.fabricColour.url,
     },
   },
   {
@@ -86,8 +85,7 @@ const heroCopy = [
     excerptEn: 'Share product requirements and explore the next steps.',
     metadata: {
       link: '/lien-he',
-      externalImageUrl:
-        'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=85',
+      externalImageUrl: photos.finishing.url,
     },
   },
 ];
@@ -98,6 +96,10 @@ export function presentationSlides(locale: string): Content[] {
     status: 'PUBLISHED',
     featured: true,
     featuredMediaId: null,
+    featuredMediaAlt:
+      locale === 'vi'
+        ? 'Ảnh stock minh họa ngành may và hợp tác; không phải tư liệu HUGAMEX'
+        : 'Illustrative stock of garment production and cooperation, not HUGAMEX documentation',
     publishedAt: null,
     locale,
     title: locale === 'vi' ? slide.vi : slide.en,

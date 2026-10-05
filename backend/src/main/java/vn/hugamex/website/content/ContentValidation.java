@@ -33,7 +33,7 @@ public class ContentValidation {
               Set.of(
                   "type", "address", "phone", "email", "hours", "latitude", "longitude", "mapUrl");
           case "PRODUCT" -> Set.of("specification");
-          case "PARTNER" -> Set.of("website");
+          case "PARTNER" -> Set.of("website", "referenceYear", "customerNames", "composition");
           case "CERTIFICATION" -> Set.of("issuer", "validUntil", "documentMediaId");
           case "HERO" -> Set.of("link", "externalImageUrl");
           default -> Set.of();
@@ -63,6 +63,36 @@ public class ContentValidation {
               }
               if (k.equals("documentMediaId") && !v.isBlank()) UUID.fromString(v);
             });
+    if (kind.equals("PARTNER")) {
+      String year = r.metadata().getOrDefault("referenceYear", "");
+      if (!year.isBlank() && !year.matches("(?:19|20)[0-9]{2}"))
+        throw new ApiException(400, "Use a four-digit reference year.");
+      String names = r.metadata().getOrDefault("customerNames", "");
+      if (!names.isBlank()) {
+        String[] values = names.split("\\|", -1);
+        if (values.length > 30
+            || Arrays.stream(values).anyMatch(v -> v.isBlank() || v.length() > 100))
+          throw new ApiException(400, "Use up to 30 customer names separated by |.");
+      }
+      String chart = r.metadata().getOrDefault("composition", "");
+      if (!chart.isBlank()) {
+        if (year.isBlank())
+          throw new ApiException(400, "A composition requires its reference year.");
+        String[] values = chart.split("\\|", -1);
+        int total = 0;
+        Set<String> labels = new HashSet<>();
+        if (values.length > 12) throw new ApiException(400, "Too many composition entries.");
+        for (String value : values) {
+          if (!value.matches("[^:|]{1,100}:(?:[1-9][0-9]?|100)"))
+            throw new ApiException(400, "Use name:percentage entries separated by |.");
+          int separator = value.lastIndexOf(':');
+          if (!labels.add(value.substring(0, separator).trim()))
+            throw new ApiException(400, "Composition labels must be unique.");
+          total += Integer.parseInt(value.substring(separator + 1));
+        }
+        if (total != 100) throw new ApiException(400, "Composition percentages must total 100.");
+      }
+    }
     if (!Set.of("POST", "PRODUCT").contains(kind) && !r.categoryIds().isEmpty())
       throw new ApiException(400, "Categories are only available for posts and products.");
   }

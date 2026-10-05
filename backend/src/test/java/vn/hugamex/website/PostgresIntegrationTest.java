@@ -1095,6 +1095,37 @@ class PostgresIntegrationTest {
     content.status("PRODUCT_CATEGORY", category.id(), "ARCHIVED", a);
   }
 
+  @Test
+  void publicProductSearchAndOrderingApplyBeforePagination() throws Exception {
+    Actor a = actor(user("ADMIN"), "ADMIN", true);
+    var category = content.save("PRODUCT_CATEGORY", null, articleFixture("search-category"), a);
+    content.status("PRODUCT_CATEGORY", category.id(), "PUBLISHED", a);
+    for (String title : List.of("Sơ mi B", "Sơ mi A", "Quần Đen")) {
+      var body =
+          (com.fasterxml.jackson.databind.node.ObjectNode)
+              json.valueToTree(articleFixture("search-product-" + Math.abs(title.hashCode())));
+      body.put("title", title);
+      body.set("categoryIds", json.createArrayNode().add(category.id().toString()));
+      var product =
+          content.save("PRODUCT", null, json.treeToValue(body, ContentRequests.Save.class), a);
+      content.status("PRODUCT", product.id(), "PUBLISHED", a);
+    }
+    mvc.perform(
+            get("/api/v1/public/products")
+                .param("search", "so mi")
+                .param("sort", "az")
+                .param("size", "1")
+                .param("page", "1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(2))
+        .andExpect(jsonPath("$.items[0].title").value("Sơ mi B"));
+    mvc.perform(get("/api/v1/public/products").param("search", "quan den"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(1));
+    mvc.perform(get("/api/v1/public/products").param("sort", "title;DROP TABLE users"))
+        .andExpect(status().isBadRequest());
+  }
+
   UUID queuedContact() throws Exception {
     mvc.perform(
             post("/api/v1/contact")

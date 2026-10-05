@@ -1,10 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import type { Content, RichNode } from '../../types';
 import { ArrowLink, RichText } from '../common/Shared';
+import BrandImage, { type PhotoKey } from './BrandImage';
 import { Reveal, RevealGroup, RevealItem } from '../common/Reveal';
 export default function CorporateBody({ article }: { article: Content }) {
   const { t, i18n } = useTranslation();
   const key = article.metadata.routeKey;
+  const imageSet: PhotoKey[] =
+    key === 'nang-luc-san-xuat'
+      ? ['cutting', 'production', 'logistics']
+      : article.kind === 'CERTIFICATION'
+        ? ['fabricDetail', 'technical', 'finishing']
+        : ['vision', 'history', 'careers'];
   const blocks: { heading?: RichNode; nodes: RichNode[] }[] = [];
   for (const node of article.content.content || []) {
     if (node.type === 'heading' && node.attrs?.level === 2)
@@ -24,7 +31,11 @@ export default function CorporateBody({ article }: { article: Content }) {
     <div className={`corporate-body corporate-${key}`}>
       <RevealGroup className="corporate-sections">
         {blocks.map((block, n) => (
-          <RevealItem key={n} className="corporate-block">
+          <RevealItem
+            key={n}
+            className={`corporate-block${n % 3 === 1 ? ' corporate-block-visual' : ''}`}
+          >
+            {n % 3 === 1 && <BrandImage photo={imageSet[Math.floor(n / 3) % imageSet.length]} />}
             <span className="corporate-index">{String(n + 1).padStart(2, '0')}</span>
             <div>
               {block.heading && <RichText node={block.heading} />}

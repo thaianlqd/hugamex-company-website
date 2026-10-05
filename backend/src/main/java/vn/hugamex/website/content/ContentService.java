@@ -77,13 +77,48 @@ public class ContentService {
       int size,
       boolean admin,
       UUID category) {
+    return list(kind, locale, term, status, page, size, admin, category, "featured");
+  }
+
+  public PageResult<ContentDto> list(
+      String kind,
+      String locale,
+      String term,
+      String status,
+      int page,
+      int size,
+      boolean admin,
+      UUID category,
+      String sort) {
+    if (!Set.of("featured", "az", "za").contains(sort))
+      throw new ApiException(400, "Unsupported sort order.");
     PageResult.check(page, size);
     if (!Set.of("vi", "en").contains(locale)
         || term.length() > 200
         || !Set.of("", "DRAFT", "PUBLISHED", "ARCHIVED").contains(status))
       throw new ApiException(400, "Invalid filter.");
     String where = " WHERE c.kind=? AND t.locale=? AND (t.title ILIKE ? OR t.excerpt ILIKE ?) ";
-    List<Object> args = new ArrayList<>(List.of(kind, locale, "%" + term + "%", "%" + term + "%"));
+    String search = term;
+    if (kind.equals("PRODUCT")) {
+      // UTF8 PostgreSQL NFD normalisation; no extension or schema mutation required.
+      where =
+          " WHERE c.kind=? AND t.locale=? AND ("
+              + "translate(regexp_replace(lower(normalize(t.title, NFD)), '[̀-ͯ]', '', 'g'), 'đ', 'd') LIKE ? OR "
+              + "translate(regexp_replace(lower(normalize(t.excerpt, NFD)), '[̀-ͯ]', '', 'g'), 'đ', 'd') LIKE ?) ";
+      search =
+          java.text.Normalizer.normalize(
+                  term.toLowerCase(Locale.ROOT), java.text.Normalizer.Form.NFD)
+              .replaceAll("\\p{M}", "")
+              .replace('đ', 'd');
+    }
+    List<Object> args =
+        new ArrayList<>(List.of(kind, locale, "%" + search + "%", "%" + search + "%"));
+    String order =
+        switch (sort) {
+          case "az" -> "lower(t.title) ASC,c.id";
+          case "za" -> "lower(t.title) DESC,c.id";
+          default -> "c.featured DESC,c.published_at DESC NULLS LAST,c.created_at DESC,c.id";
+        };
     if (!admin) {
       where += " AND c.status='PUBLISHED' ";
     } else if (!status.isEmpty()) {
@@ -109,9 +144,7 @@ public class ContentService {
     args.add(page * size);
     var items =
         db.query(
-            SELECT_LIST
-                + where
-                + " ORDER BY c.featured DESC,c.published_at DESC NULLS LAST,c.created_at DESC,c.id LIMIT ? OFFSET ?",
+            SELECT_LIST + where + " ORDER BY " + order + " LIMIT ? OFFSET ?",
             mapper(),
             args.toArray());
     return new PageResult<>(items, total, page, size);

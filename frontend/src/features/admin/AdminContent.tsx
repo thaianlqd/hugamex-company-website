@@ -187,7 +187,7 @@ const metadataFields: Record<string, string[]> = {
   pages: ['routeKey'],
   branches: ['type', 'address', 'phone', 'email', 'hours', 'latitude', 'longitude', 'mapUrl'],
   products: ['specification'],
-  partners: ['website'],
+  partners: ['website', 'referenceYear', 'customerNames', 'composition'],
   certifications: ['issuer', 'validUntil', 'documentMediaId'],
   'hero-slides': ['link', 'externalImageUrl'],
 };

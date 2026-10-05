@@ -7,6 +7,7 @@ import { AuthProvider } from './features/auth/AuthProvider';
 import AppRoutes from './app/router/AppRoutes';
 import './i18n';
 import './styles/index.css';
+import './styles/brand.css';
 import './styles/admin.css';
 const client = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } });
 ReactDOM.createRoot(document.getElementById('root')!).render(

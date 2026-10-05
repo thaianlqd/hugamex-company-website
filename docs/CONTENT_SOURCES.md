@@ -1,3 +1,25 @@
+# Latest business-content completion — 2026-10-05
+
+This update follows the client's supplied **corporate/editorial completion request** and the earlier company-profile/legacy website material already in this repository. The original PDF remains unavailable; no independent verification of current capacity or certificate validity is asserted. Canonical VI/EN additions are [brand-completion.mjs](../scripts/preview-content/brand-completion.mjs), layered over [company-profile.mjs](../scripts/preview-content/company-profile.mjs).
+
+| Area | Added / clarified | Source context |
+| --- | --- | --- |
+| Activities and services | High-end export garments; garment/material/machinery/equipment/spare-part import/export; leasing factories, offices, housing, garment machines/equipment and road vehicles; real estate, civil/industrial construction; domestic/international cooperation, alliances and investment | Client-supplied earlier website text; divided into readable about/manufacturing sections. No prices or new commercial guarantees. |
+| Earlier scale | 3,000 staff, over 2,800 machines, 1,000,000 jackets/year, 2,000,000 shirts/pants/year | Undated **historical website snapshot**, kept separate from the 2022–2023 company-profile data. |
+| Earlier factories | 123: 600 workers/550 machines; 45: Summit Garment Saigon, Sumitex/Sumitomo Japan, 1,300 staff/1,200 machines; 6: Sa Dec, four workshops, 1,100 workers/1,000 machines; 7: Phuoc Lam/Can Giuoc/Long An, 1,100 workers/1,000 machines | Historical about/manufacturing sections. The source typo “1.3000” is normalised to **1,300**, explicitly requested by the client; newer facility profiles remain distinct. |
+| Garment catalogue | Added sportswear, ski wear, waterproof seam-sealed garments and tailored trousers/fashion; added sportswear and technical categories | Earlier website product scope. Ultrasonic threadless sealing is attributed to that source; applicability requires an enquiry, not a current technology guarantee. |
+| Customers | Columbia Sportswear, **Toray Group**, L.L.Bean, Lufian, Lacoste, Talbots | **2022 references**, text names only. The latest client request corrects the earlier supplied “Torgay” spelling to **Toray**. No current contract or logo permission inferred. |
+| Composition | Columbia Sportswear 40%, Sumitex International 36%, other 24% | Explicit **2022** simple bar/stat display; metadata requires a reference year and total 100%. |
+| Quality / international recognition | Arch of Europe / original “J*ban Imagen Arte – Spain”; GQM American Quality Award / Global Quality Management, New York | Historical references; original unusual issuer spelling retained pending original documents. No invented date. |
+| Domestic recognition | Business Excellent Awards; best export-market solutions; strong-brand/sustainable-development Super Cup; Golden Lotus/high-quality international-standard medals; distinctive-product textile/garment enterprise award | Full supplied **2006 / 2007** descriptions and issuing bodies retained in VI/EN. |
+| Certificates / approach | ISO 9001:2000 and SA 8000 / BVQI UK; quality recognition at domestic/international fairs; product/service quality, effective management, reputation and customer commitments | Historical records and stated business approach. Current certificate documents/validity still need company confirmation. |
+
+The guarded service job now reports **43 shared published entities / 86 VI–EN translations**: seven pages, six articles, eleven products, seven product categories, four factories, three editorial categories, three legacy HERO records, one customer overview and one quality overview. Legacy HERO records are retained for compatibility; public hero presentation is developer-owned. Four existing product categories are featured for the compact homepage/catalogue preview; all seven remain available in filtering.
+
+Stable keys and persisted fingerprints preserve owner-edited records. The final seed pass changed 15 content operations; its immediate repeat pass changed **zero**. The safe [seed summary](qa/phase2/seed-summary.json) records the latest pass, not a cumulative total for all refinement iterations. No user, role, password, MFA or SMTP setting was changed. New temporary photographs and attribution are listed in [ASSETS](ASSETS.md).
+
+The sections below are chronological history. This latest request supersedes their older counts, customer spelling and presentation ownership statements.
+
 # Phase 2 content sources and approval register
 
 Audited 2026-10-05. This is a preview editorial register, not client approval. The user authorised temporary internet photos and proposed copy for local review. Business content is in Supabase through Spring services; the canonical seed copy is [catalog.mjs](../scripts/preview-content/catalog.mjs).

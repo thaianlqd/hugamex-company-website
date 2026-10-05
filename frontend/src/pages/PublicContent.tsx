@@ -5,6 +5,10 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { api, errorMessage } from '../services/api';
 import { ContentCard, RichText, Seo, State, ArrowLink } from '../components/common/Shared';
+import BrandImage, { type PhotoKey } from '../components/public/BrandImage';
+import CustomerReferences, { CustomerRecord } from '../components/public/CustomerReferences';
+import QualityRecords from '../components/public/QualityRecords';
+import { useProductCategories } from '../components/public/CategoryShowcase';
 import CorporateBody from '../components/public/CorporateBody';
 import BranchNetwork from '../components/public/BranchNetwork';
 import ProductCatalog from '../components/public/ProductCatalog';
@@ -86,6 +90,7 @@ export default function PublicContent() {
   const listing = data && 'items' in data ? data : undefined;
   const title = article?.title || t(label);
   const isBranch = resource === 'branches';
+  const productCategories = useProductCategories(resource === 'products');
   const related = useQuery({
     queryKey: ['public', 'related', article?.id, i18n.language],
     queryFn: async () =>
@@ -140,6 +145,22 @@ export default function PublicContent() {
           </div>
         )}
       </header>
+      {!single && ['products', 'partners', 'certifications', 'posts'].includes(resource) && (
+        <div className={`public-masthead masthead-${resource}`}>
+          <BrandImage
+            photo={
+              (
+                {
+                  products: 'fabricDetail',
+                  partners: 'vision',
+                  certifications: 'finishing',
+                  posts: 'cutting',
+                } as Record<string, PhotoKey>
+              )[resource]
+            }
+          />
+        </div>
+      )}
       <div className="page-body">
         {pathname === '/gioi-thieu' && (
           <div className="toolbar">
@@ -147,7 +168,7 @@ export default function PublicContent() {
             <ArrowLink to="/gioi-thieu/tam-nhin-su-menh">{t('vision')}</ArrowLink>
           </div>
         )}
-        {!single && !['products', 'branches'].includes(resource) && (
+        {!single && !['products', 'branches', 'partners', 'certifications'].includes(resource) && (
           <div className="public-filter">
             <label className="catalog-search" htmlFor="public-search">
               <Search size={19} aria-hidden="true" />
@@ -185,7 +206,9 @@ export default function PublicContent() {
             )}
           </div>
         )}
-        {resource === 'products' && !single ? (
+        {resource === 'partners' && !single ? (
+          <CustomerReferences />
+        ) : resource === 'products' && !single ? (
           <ProductCatalog />
         ) : missing ? (
           <div className="state">
@@ -205,7 +228,27 @@ export default function PublicContent() {
           />
         ) : article ? (
           <>
-            {article.featuredMediaId && (
+            {resource === 'products' && (
+              <nav
+                className="product-category-trail"
+                aria-label={i18n.language === 'vi' ? 'Danh mục của sản phẩm' : 'Product categories'}
+              >
+                <Link to="/san-pham">{t('products')}</Link>
+                <span>/</span>
+                {productCategories.data?.items
+                  .filter((category) => article.categoryIds.includes(category.id))
+                  .map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/san-pham?category=${category.id}#catalog-results`}
+                    >
+                      {category.title}
+                    </Link>
+                  ))}
+                <span>/ {article.title}</span>
+              </nav>
+            )}
+            {article.featuredMediaId && resource !== 'partners' && (
               <ContentImage
                 className="article-hero"
                 src={`${api.defaults.baseURL}/media/${article.featuredMediaId}`}
@@ -214,7 +257,9 @@ export default function PublicContent() {
                 height="675"
               />
             )}
-            {resource === 'pages' ? (
+            {resource === 'partners' ? (
+              <CustomerRecord item={article} compact={false} />
+            ) : resource === 'pages' ? (
               <CorporateBody article={article} />
             ) : resource === 'posts' ? (
               <ArticleBody
@@ -306,6 +351,8 @@ export default function PublicContent() {
                 </section>
               )}
           </>
+        ) : resource === 'certifications' ? (
+          <QualityRecords items={listing?.items || []} />
         ) : isBranch ? (
           <BranchNetwork items={listing?.items || []} />
         ) : listing?.items.length ? (
