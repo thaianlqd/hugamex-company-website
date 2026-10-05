@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: mode === 'admin' ? 5180 : 5173,
     strictPort: true,
+    allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/sitemap.xml': {
         target: process.env.HUGAMEX_QA_BACKEND || 'http://127.0.0.1:8080',
