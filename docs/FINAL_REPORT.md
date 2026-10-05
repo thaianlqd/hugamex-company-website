@@ -1,94 +1,100 @@
-# Local handover — HUGAMEX
+# Latest follow-up — content-only CMS and contact email
 
-2026-10-05 initial handover. The local application and CMS are implemented. Subsequent Supabase/Gmail work, separate public/admin frontends (5173/5180), and verified Supabase owner creation are recorded in [SUPABASE_SMTP_REPORT](SUPABASE_SMTP_REPORT.md). Current run instructions and private credential location are in README. Nothing has been deployed or published to production.
+2026-10-05. The CMS now manages editorial/business content without homepage, hero or global website configuration. Those routes are absent from navigation and denied by Spring for every CMS role, including SUPER_ADMIN. Developers edit presentation at `frontend/src/content/sitePresentation.ts`, layout components and CSS. Articles/products load automatically from published content.
 
-## 1. What was implemented
+Create/edit workflows use a centred, bounded popup with preview, translation selection, sticky actions, background scroll lock, focus containment and Escape/discard confirmation. Products have a separate category picker and validated category association. Supabase now contains **37 published shared entities / 74 translations**, including **seven products and five product categories**. The guarded service seed made **36 content operations** and its repeat pass made zero further content writes; owner edits remain fingerprint-protected.
 
-Editorial corporate public website, VI/EN, responsive navigation/footer, fixed corporate pages, manufacturing workflow, product/network/partner/certificate listings and details, news/search/category/pagination/share/related posts, careers/privacy/contact, real auth and RBAC CMS. Temporary stock images and content are visibly awaiting approval. Hero and homepage sections are controlled by CMS.
+Public contact submissions persist in the admin inbox and queue a plain-text notification to the fixed recipient **thaianvtk@gmail.com**, as requested. The admin inbox shows notification state. Failed delivery retries up to five times; old entries are not mailed retroactively. One labelled real submission was saved and reached **SENT on attempt 1**; Gmail SMTP accepted the message. Inbox receipt has not been independently confirmed. [Safe SMTP check](qa/content-admin/contact-smoke.json).
 
-## 2. Architecture overview
+Final verification: **74 backend tests (49 real-PostgreSQL integration), 19 frontend tests, seven isolated browser scenarios**, lint/typecheck and both frontend builds. Public read-only QA covered 20 layouts and ten axe scans; isolated CMS capture covered 32 layouts and three axe scans. Scanned screens had zero violations/page errors. Browser tests used Docker/file-mail fixtures, without the owner login/MFA. Final Supabase postflight verified 18 tables, five successful migrations, RLS and BYTEA. Screenshots are in [qa/phase2](qa/phase2/) and [public-refinement](qa/public-refinement/). No deployment or DNS change took place. Earlier Lighthouse results below were not rerun.
 
-React 19/Vite/strict TypeScript SPA calls one Java 21/Spring Boot 3.5.16 REST monolith. PostgreSQL 17 stores relational identities, JSONB content and BYTEA media. Query/Axios/RHF/Zod/i18next/Helmet/TipTap/Motion/Lucide are integrated. JPA repository + MapStruct handle user profile DTO mapping; parameterized JDBC handles security locks and content queries. No browser Supabase client or business data access. See ARCHITECTURE and DECISIONS.
+# Previous public refinement: headquarters, catalog and articles
 
-## 3. Main routes
+The client-confirmed head office is now **636–638 Nguyễn Duy, Phường Phú Định, TP. Hồ Chí Minh** in the CMS contact settings and company introduction. The network page separates this office/map from the four manufacturing facilities. Contact has a loaded Google map alongside its enquiry form; footer addresses open Maps and the public contact popover includes directions to the head office.
 
-Public: `/`, `/gioi-thieu`, `/gioi-thieu/lich-su`, `/gioi-thieu/tam-nhin-su-menh`, `/nang-luc-san-xuat`, `/san-pham`, `/he-thong`, `/doi-tac`, `/chung-nhan`, `/phat-trien-ben-vung`, `/tin-tuc`, `/tuyen-dung`, `/lien-he`, `/chinh-sach-bao-mat`; resource detail slugs for news/products/branches/partners/certificates.
+Product cards align their headings/actions and lower borders on homepage and catalog. A compact filter supports accent-insensitive search, CMS group selection, name sorting and clear/no-results recovery. Six bilingual articles now have additional practical sections, checklists and illustrative examples, a contents sidebar, reading estimate and burgundy collaboration CTA. Burgundy accents were added to public section headings, filters and contact layouts. Navigation now has an opaque background.
 
-Auth: `/dang-nhap`, `/dang-ky`, `/xac-thuc-email`, `/quen-mat-khau`, `/dat-lai-mat-khau`, `/tai-khoan`.
+This follow-up passed lint, strict typecheck, 19 frontend tests and both builds. Read-only browser QA passed 20 layouts across 375/390/768/1440, ten axe scans, real filter/TOC/English interactions and loaded Google Maps. The contact supplement passed two further layout/axe/Escape-focus checks. There were zero page errors and attempted business writes. Twelve new safe captures and reports are in [public-refinement](qa/public-refinement/). The guarded seed made 33 content operations plus the audited address setting update; repeat pass added no content writes and published counts remain 30 shared entities / 60 translations. Java/auth code was unchanged in this follow-up; prior 71 backend and six isolated E2E results below were not rerun. Nothing was deployed.
 
-CMS: `/admin`, posts/categories/pages/media/branches/products/partners/certifications/hero-slides/homepage/contact-messages/users/roles/audit-logs/settings beneath `/admin`. Resource editors use `/{resource}/new` or `/{resource}/{id}`. Unknown routes display 404.
+# Client company profile and account layout
 
-## 4. Database schema summary
+2026-10-05 follow-up. The old company website excerpt and supplied company-profile brief have now replaced applicable generic previews. That follow-up produced **30 published shared records / 60 VI–EN translations**, including **four facilities and five product groups**. Contact phone/email/address/fax are now CMS settings. Historical workforce/lines/turnover remain labelled 2023; customer references and composition remain labelled 2022. Factory figures are explicitly source snapshots, not current capacity. No customer logos or currently valid certificates are invented. Seven records were added and two obsolete seed-owned previews archived after fingerprint checks.
 
-17 app tables across identity/roles, OTP/session/MFA, media, constrained content/translations/categories, homepage, contacts/settings/audit/rate limits. Four Flyway migrations; constraints and indexes; UTC timestamps and UUIDs. RLS default-deny for platform guest roles. Shared normalized content kinds preserve one identity across languages; lists omit rich bodies and binary data. See DATABASE.
+MFA layout is compact and aligned. Personal information, password change and MFA/recovery settings now have separate routes, independent of the login photograph. Display-name editing uses an authenticated, self-only API with strict fields and audit. Password change includes confirmation and signs out afterwards. Dedicated logout is visible in the CMS topbar, account header and MFA footer. A public circular phone button opens a rounded call/email/enquiry panel with Escape and focus restoration.
 
-## 5. Authentication/security model
+Verified: **71 backend tests, 19 frontend tests, six E2E scenarios**, lint/typecheck and both builds. Final read-only browser checks passed 45 public and 32 CMS layouts; scanned screens had zero axe violations and page errors. All 39 safe screenshots are available, including the new MFA/account/network/contact screens. Detailed results are in TEST_REPORT. Layout/data changes were made without changing owner credentials, RBAC/MFA requirements, SMTP or applied migrations. Normal backend startup keeps both seed flags disabled. The handover below reflects the completed Phase 2 and follow-up. Previous Lighthouse numbers predate this follow-up and were not rerun. Nothing was deployed.
 
-Argon2id; purpose-bound OTP with expiry/attempt/resend controls; verified/active account checks; in-memory 10-minute access JWT; rotated HttpOnly refresh cookie/digest/family replay revocation; CSRF for cookie transitions. ADMIN/SUPER_ADMIN mandatory TOTP; optional EDITOR MFA enforced once configured; encrypted secrets, replay counter and single-use recovery codes. RBAC/recent-auth/last-super constraints and security audit are server enforced. Google OIDC/state/PKCE is wired conditionally but not tested externally.
+# HUGAMEX — Phase 2 handover
 
-## 6. Admin features
+2026-10-05. Implemented directly in the existing repository on main without scaffolding, changing architecture, creating a Git commit, deployment, DNS changes or Google OAuth configuration. The public app remains http://localhost:5173; the separate CMS remains http://localhost:5180; Spring remains on 8080. Editing repository code requires no admin login. CMS access still uses normal RBAC/MFA.
 
-Real API-backed draft/edit/preview/publish/unpublish/archive, categories, bilingual translation and SEO. Image and PDF selectors, searchable media library, authenticated image preview, upload/edit/download/delete with reference/privacy guards. Fixed homepage order/visibility/copy/content selection. Contact status management; user invitations/status, SUPER_ADMIN role/MFA reset/audit/settings. Recovery regeneration under Account. Local access and editor workflow are documented in README.
+## Completed
 
-## 7. Test results
+Public burgundy/warm-white editorial design now has restrained one-time scroll reveal, heading/content stagger, reduced-motion support, image loading/fallback and responsive corporate layouts. History includes explicitly dated source figures and historical awards without invented milestone dates; vision, manufacturing and the four-facility network have dedicated layouts. Empty content states provide clear next actions instead of large approval warnings.
 
-Backend: 7 unit + 40 real PostgreSQL integration tests passed, no skipped tests. Frontend: 13 tests passed. Lint/typecheck/build passed. All 5 browser scenarios passed in 36.6 seconds. Browser flows cover real OTP/auth/MFA/upload/publish/contact plus all CMS screens and automated accessibility. Tests use disposable PostgreSQL or explicitly labelled local dev fixtures. Full results and public artifacts are in [TEST_REPORT](TEST_REPORT.md).
+Hero uses three CMS-controlled stock image slides, six-second automatic rotation, previous/next, numbered controls, pause/play and swipe. It pauses on hover, focus and a hidden document; reduced motion disables autoplay. Library media takes precedence over an optional HTTPS external URL. Only the next slide is prefetched. External images use anonymous CORS/no-referrer and exact approved image hosts.
 
-## 8. Build results
+The admin uses a neutral white/gray/charcoal system with restrained indigo, grouped 252 px sidebar, 68 px topbar, breadcrumbs and mobile drawer. Authentication has a desktop image/form split and compact mobile form. Dashboard values come from real APIs. Lists, status/date/language columns, editor/SEO/media sidebar, searchable thumbnail library, collapsed upload/homepage controls, native confirmation dialogs, toast feedback and loading states are polished. Homepage reorder is atomic and audited. Existing user/security/settings workflows retain backend authorization.
 
-Java 21 executable jar built; Spotless check and Maven verify passed. Vite production dist built with lazy route chunks; TipTap excluded from public-route loading. Frontend dependency audit has zero findings. Lighthouse is isolated outside application dependencies and retains tool-only advisories documented in SECURITY_REVIEW.
+## Supabase development content
 
-Final local Lighthouse scores (performance/accessibility/best practices/SEO): mobile **81/100/100/92**, desktop **100/100/100/91**. LCP was 4.7 s on simulated mobile and 0.5 s on desktop. Development noindex is intentional. Temporary JPEGs, API image discovery and production cache policy remain performance considerations; these measurements are not production guarantees.
+| Shared content kind | Records | VI / EN |
+| --- | --- | --- |
+| Corporate pages | 7 | 7 / 7 |
+| Evergreen news | 6 | 6 / 6 |
+| Products | 5 | 5 / 5 |
+| HERO slides | 3 | 3 / 3 |
+| Categories | 3 | 3 / 3 |
+| Factories / historical customers / quality | 6 | 6 / 6 |
+| Total | 30 | 30 / 30 |
 
-## 9. Remaining placeholders/credentials
+Seven populated pages: introduction, history, vision/mission, manufacturing, sustainability, careers and privacy. Applicable pages use the client-supplied profile and legacy website excerpt in VI/EN. Five product groups cover outerwear, fleece, shirts, pants/shorts and toddler garments. Four facility pages contain source-backed addresses and capacity snapshots. Customer references are explicitly dated 2022; quality awards and certificates are historical references without a current-validity claim. The six articles remain evergreen garment topics. Seven homepage sections reference the published content.
 
-Google OAuth and Supabase JDBC configuration, production keys, SMTP sender/delivery and HTTPS domain/CORS. Company-approved logo/photos, factual metrics/history/vision, factory addresses, contacts, product specifications, partner rights, current certificates, jobs, final VI/EN copy and privacy/retention policy. No invented employee/factory/capacity/partner/certificate claims.
+Five fixed temporary stock photos are stored through existing BYTEA media validation, with alt text identifying them as illustrations. Three HERO URLs use Pexels/Unsplash. No ImageGen was used. [CONTENT_SOURCES](CONTENT_SOURCES.md) records source URLs, verified scope and the internal approval/TODO register; [ASSETS](ASSETS.md) records temporary photos.
 
-## 10. Known limitations
+The separate explicit **dev service job** was used, as permitted by the plan. It requires two opt-ins and exact reviewed-project/manifest checks, calls existing validated/audited domain services, tracks stable keys/fingerprints, preserves owner edits and exits. The company-profile update added seven entities, saved/published 15 bilingual records and archived two unchanged obsolete previews: 47 content operations. Contact settings use the same validated/audited settings service. The built-in repeat pass added zero content writes. It does not change users, passwords, roles, MFA or SMTP. The original Docker-only seed/E2E refusal guards remain unchanged. Normal backend startup has both seed flags disabled.
 
-SPA metadata is client-rendered; social bots may need prerender/SSR. VI canonical URLs are shared across language preferences; separately indexed English URLs need a decision. Sitemap is bounded at 10,000 detail paths. Mobile performance depends on image sizes and API/network latency. No absolute session-family lifetime; concurrent tab rotations may require sign-in again. Media validation is not antivirus. BYTEA scale and backup recovery remain unbenchmarked. No external production service, HTTPS proxy or live SMTP validation.
+## Verified
 
-## 11. Security review findings
+- Backend: 71 tests passed, zero failures/skips; Spotless, Maven verify and executable jar passed.
+- Frontend: ESLint, strict TypeScript, 19 tests, public build and admin build passed.
+- Browser: six E2E scenarios passed in 56.2 s with real Docker API/file OTP; responsive smoke passed 45 public and 32 admin checks with no document overflow or page errors.
+- Final scanned accessibility screens had zero axe violations; mobile drawer Escape/focus restoration passed.
+- Supabase read-only postflight confirmed 17 tables, four migrations, RLS, BYTEA and one SUPER_ADMIN.
+- Safe screenshots and count-only reports are in [qa/phase2](qa/phase2/); detailed scope and limitations are in [TEST_REPORT](TEST_REPORT.md).
 
-CSRF header/cookie mismatch, metadata publish conversion, read-only field submission, MFA role-combination bypass, refresh/revoke race, media reference/privacy/type checks, React 19 title and TipTap lifecycle issues were fixed and regression tested. RLS default deny is tested with a guest role. Full risk/code/mitigation/remaining-risk matrix is in SECURITY_REVIEW. Spring Security DPoP-specific dependency advisory is assessed as outside this app's configured auth flow; review maintenance/security strategy before production. No full Java SCA or independent penetration test has run; no claim of complete production security.
+Earlier Phase 2 Lighthouse performance/accessibility/best practices/SEO: mobile **81/100/100/92**, desktop **91/100/100/91**. LCP: mobile 3.7 s, desktop 1.2 s. These measurements predate the account/company-profile follow-up. Mobile image performance still needs final asset/cache optimization. These measurements describe local preview, not production readiness.
 
-## 12. Exact local run commands
+## Security and approval
 
-At `hugamex-company-website`, first setup only if environments do not exist:
+JWT/refresh/OTP/TOTP, mandatory privileged MFA, RBAC, private media, publish guards, TipTap allowlists and audit remain enforced. HERO external URLs accept only exact HTTPS images.pexels.com / images.unsplash.com, no userinfo/nondefault ports; Java never fetches them. No arbitrary HTML or remote import endpoint was added. Secret environment/state/mail files remain ignored; safe screenshots omit credentials and MFA setup. No secrets were printed by the task or committed.
+
+Owner action remains: rotate previously shared admin credentials, revoke old sessions and rotate Google App Password, then re-enroll the exposed MFA setup secret. This task did not silently invalidate existing owner access. The backend environment must remain private. Production runtime grants/TLS/static-host CSP/security and dependency review remain required; the Supabase pooler observation does not certify end-to-end TLS.
+
+Client approval is still needed for official metrics, precise history dates, current factories/addresses/contact details, partner permissions, certificate records, product specifications, real photography/logo, open jobs, final VI/EN copy and privacy/retention/legal policy. One discreet preview badge is retained publicly; detailed approval status stays in the internal register.
+
+Remaining work: Google OAuth, final client content/assets, production domain/CORS/HTTPS/runtime configuration and a separately authorized deployment review. No deployment or production-ready claim is made. See [DEPLOYMENT_PLAN](DEPLOYMENT_PLAN.md) and prior [SUPABASE_SMTP_REPORT](SUPABASE_SMTP_REPORT.md) for external integration history.
+
+## Local commands
+
+Backend, from repository root:
 
 ```sh
-cd /Users/thaian/Documents/CongTyMayHuuNghi_WebSite/hugamex-company-website
-python3 scripts/setup-local.py
-docker compose up -d postgres
-cd frontend
-npm ci
-cd ..
 bash scripts/backend.sh spring-boot:run
 ```
 
-Separate terminal:
+Public frontend, in a separate terminal:
 
 ```sh
-cd /Users/thaian/Documents/CongTyMayHuuNghi_WebSite/hugamex-company-website/frontend
+cd frontend
 npm run dev
 ```
 
-Open `http://localhost:5173`. Keep existing environment keys and Docker volume. CMS QA access is in private `.local/e2e.json`; use this only on local. Exact build/test/bootstrap/dev-mail instructions are in README. The user's Vite process is not intentionally stopped or replaced.
+Admin frontend, in another terminal:
 
-## 13. Exact next step before production
+```sh
+cd frontend
+npm run dev:admin
+```
 
-Approve content/assets and provide Google/Supabase staging configuration, then execute the staging verification in DEPLOYMENT_PLAN: DB grants/RLS/SSL, secrets, Google callback, SMTP, HTTPS cookie/CSP/headers, backups, dependency scan and owner MFA enrollment. Review the concrete staging result. Production deployment/DNS/live SMTP must be explicitly instructed in a later task.
-
-## Intentionally uncommitted / ignored files
-
-Root `.env`, `backend/.env`, optional frontend `.env` files; `.local/` QA credentials/recovery codes/seed-state; `backend/.dev-mail/` OTP messages; `.tools/` Maven/browser/Lighthouse caches; `.local-*` diagnostics and `*.log`; node_modules/dist/target; Playwright test-results/report/trace; coverage/tsbuildinfo/OS metadata. Env examples, source, migrations, docs, lockfile and public-only QA artifacts are reviewable. No Git commit was created in this task.
-
-## Environment variables still required for external services
-
-- Supabase backend: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`.
-- Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
-- Production: `SPRING_PROFILES_ACTIVE=prod`; independent `JWT_SIGNING_KEY`, `TOKEN_HASH_KEY`, `OTP_HMAC_KEY`, `MFA_ENCRYPTION_KEY`; `CORS_ALLOWED_ORIGINS`, `FRONTEND_URL`; SMTP_HOST/PORT/USERNAME/PASSWORD and MAIL_FROM.
-- Frontend: `VITE_APP_ENV=production`, `VITE_SITE_URL`, same-origin `VITE_API_BASE_URL=/api/v1`.
-- One-time owner bootstrap only: BOOTSTRAP_ADMIN_EMAIL/PASSWORD, removed after initial creation. `MAIL_MODE=file` is restricted to dev/test; `MAIL_MODE=smtp` supports dev/prod and requires SMTP settings. The legacy DEV_MAIL_MODE name has been replaced.
-
-No Supabase service-role/anon key is needed in frontend. Local values already exist and are not production credentials.
+Use the existing running Vite servers when those ports are already occupied. Their fixed ports are intentional; do not start a duplicate process. No environment keys or Docker volumes need to be reset. Full guarded preview seed/isolated QA commands are in [DEVELOPMENT](DEVELOPMENT.md).

@@ -19,12 +19,19 @@ public class ContactController {
   private final RateLimiter rate;
   private final AuditService audit;
   private final Policy policy;
+  private final ContactNotificationService notifications;
 
-  public ContactController(JdbcTemplate db, RateLimiter rate, AuditService audit, Policy policy) {
+  public ContactController(
+      JdbcTemplate db,
+      RateLimiter rate,
+      AuditService audit,
+      Policy policy,
+      ContactNotificationService notifications) {
     this.db = db;
     this.rate = rate;
     this.audit = audit;
     this.policy = policy;
+    this.notifications = notifications;
   }
 
   public record Contact(
@@ -44,14 +51,15 @@ public class ContactController {
     if (!c.website().isEmpty()) throw new ApiException(400, "Invalid contact request.");
     rate.check("contact-email", c.email().toLowerCase(Locale.ROOT), 3, 600);
     db.update(
-        "INSERT INTO contact_messages(id,full_name,company,email,phone,subject,message) VALUES (?,?,?,?,?,?,?)",
+        "INSERT INTO contact_messages(id,full_name,company,email,phone,subject,message,notification_status) VALUES (?,?,?,?,?,?,?,?)",
         UUID.randomUUID(),
         c.fullName(),
         c.company(),
         c.email(),
         c.phone(),
         c.subject(),
-        c.message());
+        c.message(),
+        notifications.enabled() ? "PENDING" : "DISABLED");
     return Map.of("message", "Your enquiry has been received.");
   }
 

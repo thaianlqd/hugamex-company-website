@@ -89,7 +89,7 @@ Preflight chỉ SELECT, chặn bảng trùng tên chưa có Flyway history hoặ
 bash scripts/verify-supabase.sh postflight
 ```
 
-Postflight kiểm tra 17 bảng, 4 migrations thành công, RLS, BYTEA và số SUPER_ADMIN; không đọc OTP/password và không ghi dữ liệu. Khởi động lại backend một lần để xác nhận Flyway không apply lại migration. Bootstrap chỉ khi chính bạn điền `BOOTSTRAP_ADMIN_EMAIL/PASSWORD`; để trống thì bỏ qua.
+Postflight kiểm tra 18 bảng, 5 migrations thành công, RLS, BYTEA và số SUPER_ADMIN; không đọc OTP/password và không ghi dữ liệu. Khởi động lại backend một lần để xác nhận Flyway không apply lại migration. Bootstrap chỉ khi chính bạn điền `BOOTSTRAP_ADMIN_EMAIL/PASSWORD`; để trống thì bỏ qua.
 
 Không chạy `prepare-e2e.py`, `seed-dev-content.mjs` hoặc Playwright journeys trên Supabase. Hai helper QA có guard database Docker; `dev` không có nghĩa là database local. Không tự import nội dung hoặc credentials QA. `bash scripts/test-backend.sh` luôn dùng PostgreSQL Testcontainers và `MAIL_MODE=file`, không gửi Gmail thật.
 
@@ -98,11 +98,12 @@ Không chạy `prepare-e2e.py`, `seed-dev-content.mjs` hoặc Playwright journey
 ## CMS
 
 - Bài viết, danh mục, trang nội dung: tạo nháp, VI/EN, TipTap, ảnh nổi bật, SEO, preview, xuất bản, chuyển nháp hoặc lưu trữ.
-- Nhà máy/văn phòng, sản phẩm, đối tác, chứng nhận, hero: quản lý qua các mục tương ứng.
-- Trang chủ: bật/tắt, thứ tự, tiêu đề/mô tả hai ngôn ngữ và chọn nội dung đã xuất bản. Hero có điều khiển chuyển slide.
+- Nhà máy, sản phẩm, danh mục sản phẩm riêng, đối tác và tư liệu chất lượng: quản lý nội dung qua các mục tương ứng.
+- Tạo/sửa nội dung trong popup, hỗ trợ preview và xác nhận khi đóng thay đổi chưa lưu. Sản phẩm cần thuộc danh mục đã xuất bản.
+- Bố cục, thứ tự section và ảnh mở đầu do dev sửa tại `frontend/src/content/sitePresentation.ts`, `pages/Home.tsx` và CSS; CMS không có quyền đổi bố cục, hero hoặc cấu hình website, kể cả SUPER_ADMIN.
 - Media: upload, alt text, public/private, tải xuống, chỉnh sửa và xóa có kiểm tra tham chiếu. PDF và ảnh JPEG/PNG/WebP được phép.
-- Liên hệ: xem nội dung và đổi NEW/READ/REPLIED/ARCHIVED. Không tự gửi email phản hồi.
-- Người dùng: mời, kích hoạt/vô hiệu hóa; SUPER_ADMIN quản role và reset MFA. Nhật ký và cài đặt website thuộc SUPER_ADMIN.
+- Liên hệ: lưu tin nhắn trong admin, đổi NEW/READ/REPLIED/ARCHIVED, hiển thị trạng thái email thông báo. Khi bật `CONTACT_NOTIFICATIONS_ENABLED` và điền `CONTACT_NOTIFICATION_EMAIL`, backend gửi thông báo đến địa chỉ cố định; SMTP lỗi sẽ thử lại tối đa 5 lần. Không tự gửi thư trả lời khách.
+- Người dùng: mời, kích hoạt/vô hiệu hóa; SUPER_ADMIN quản role và reset MFA. Nhật ký thuộc SUPER_ADMIN; cấu hình website do dev quản lý.
 
 ADMIN/SUPER_ADMIN phải bật MFA. EDITOR có thể bật MFA; khi đã bật thì phải xác thực để vào CMS. Mã khôi phục được tạo lại trong Tài khoản sau lần đăng nhập gần đây. Thay role/status/mật khẩu hoặc reset MFA thu hồi các phiên liên quan.
 
@@ -141,3 +142,27 @@ Production còn cần bốn khóa 32-byte Base64 độc lập (`JWT_SIGNING_KEY`
 Ảnh stock, số liệu, lịch sử, chứng nhận, đối tác, liên hệ và chính sách bảo mật đang chờ phê duyệt. Đọc [nội dung](docs/CONTENT_INVENTORY.md), [asset](docs/ASSETS.md), [security review](docs/SECURITY_REVIEW.md), [kế hoạch production](docs/DEPLOYMENT_PLAN.md) và [báo cáo bàn giao](docs/FINAL_REPORT.md).
 
 Chưa deploy, chưa đổi DNS. Google OAuth vẫn chưa cấu hình/test. Trạng thái kết nối Supabase và Gmail SMTP thực tế được ghi riêng trong [báo cáo tích hợp](docs/SUPABASE_SMTP_REPORT.md). Kết quả local không thay thế kiểm thử cấu hình production.
+
+## Phase 2 preview
+
+Public và CMS đã được hoàn thiện giao diện, carousel, animation nhẹ và responsive. Supabase development hiện có 30 thực thể nội dung dùng chung VI/EN (60 bản dịch): 7 trang, 6 bài, 5 sản phẩm, 3 hero, 3 danh mục, 4 xí nghiệp, một trang đối tác năm 2022 và một trang tư liệu chất lượng lịch sử. Năm ảnh stock tạm lưu BYTEA; ba hero dùng URL ảnh HTTPS đã giới hạn host.
+
+Bạn sửa trực tiếp code được mà không cần đăng nhập admin. Khi muốn sửa nội dung trong CMS vẫn dùng đăng nhập/MFA bình thường. Các flag seed mặc định tắt; hướng dẫn seed idempotent và QA Docker riêng nằm trong [DEVELOPMENT](docs/DEVELOPMENT.md). Không chạy helper Docker cũ hoặc E2E không giới hạn lên Supabase.
+
+Xem [nguồn và nội dung chờ duyệt](docs/CONTENT_SOURCES.md), [kết quả kiểm thử](docs/TEST_REPORT.md), [bàn giao Phase 2](docs/FINAL_REPORT.md) và [ảnh giao diện](docs/qa/phase2/).
+
+### Nội dung hồ sơ doanh nghiệp và tài khoản
+
+Hồ sơ bạn cung cấp đã được nhập song ngữ vào Supabase: 4 xí nghiệp, 5 nhóm sản phẩm, thông tin liên hệ và tư liệu lịch sử. Tổng hiện có 30 nội dung xuất bản dùng chung VI/EN. Số liệu năm 2022/2023 giữ nguyên năm; năng lực từng cơ sở ghi rõ theo hồ sơ, không mặc định là hiện tại.
+
+Tài khoản đã tách: `/tai-khoan` (thông tin/tên hiển thị), `/tai-khoan/doi-mat-khau`, `/tai-khoan/bao-mat`. Admin có nút đăng xuất riêng trên thanh quản trị. Cửa sổ liên hệ nhanh ở góc phải chỉ hiện ở trang khách hàng, dùng số điện thoại và email từ cài đặt CMS. Ảnh thật, địa chỉ hành chính/liên hệ trước launch và chứng nhận hiện hành vẫn cần xác nhận.
+
+### Trụ sở, bản đồ và danh mục sản phẩm
+
+Trụ sở chính đã được sửa theo xác nhận của bạn: **636–638 Nguyễn Duy, Phường Phú Định, TP. Hồ Chí Minh**. Trang hệ thống phân biệt trụ sở với các xí nghiệp; trang liên hệ có Google Maps cạnh biểu mẫu. Sản phẩm có tìm kiếm không dấu, lọc nhóm, sắp xếp tên và thẻ căn đều. Sáu bài viết song ngữ đã có thêm nội dung thực hành, mục lục và bố cục đọc. Xem [ảnh cập nhật](docs/qa/public-refinement/).
+
+### CMS nội dung và email liên hệ
+
+Admin chỉ quản lý nội dung, không điều khiển giao diện/trang chủ/hero/cấu hình website. Dev chỉnh tại [sitePresentation.ts](frontend/src/content/sitePresentation.ts), Home và CSS. Tạo/sửa bài viết và sản phẩm mở popup gọn; sản phẩm chọn danh mục riêng đã xuất bản. Supabase hiện có 7 sản phẩm thuộc 5 danh mục song ngữ.
+
+Tin nhắn liên hệ lưu vào admin và gửi thông báo đến `thaianvtk@gmail.com` theo cấu hình local. Một tin kiểm thử đã được lưu và Gmail SMTP chấp nhận (SENT, lần 1); chưa xác nhận thư vào Inbox. Worker thử lại tối đa 5 lần nếu SMTP lỗi. Admin thấy trạng thái email bên cạnh trạng thái xử lý yêu cầu. 74 backend tests, 19 frontend tests, 7 browser scenarios và cả hai build đã qua; xem [báo cáo](docs/TEST_REPORT.md).

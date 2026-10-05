@@ -14,6 +14,9 @@ import type { Content, PageResult, RichNode } from '../../types';
 import { resources } from './AdminLayout';
 import MediaPreview from './MediaPreview';
 import Pagination from './AdminPagination';
+import { useAdminDialog, useAdminToast } from '../../components/admin/useAdminFeedback';
+import ContentImage, { validHeroImageUrl } from '../../components/common/ContentImage';
+import { Bold, Italic, Heading2, Heading3, List, Undo2, Redo2 } from 'lucide-react';
 export function AdminContentList() {
   const { resource = 'posts' } = useParams();
   const { t } = useTranslation();
@@ -62,7 +65,9 @@ export function AdminContentList() {
         >
           <option value="">{t('viewAll')}</option>
           {['DRAFT', 'PUBLISHED', 'ARCHIVED'].map((s) => (
-            <option key={s}>{s}</option>
+            <option key={s} value={s}>
+              {t(s.toLowerCase())}
+            </option>
           ))}
         </select>
         <select
@@ -90,17 +95,39 @@ export function AdminContentList() {
                   <th>{t('title')}</th>
                   <th>{t('status')}</th>
                   <th>{t('slug')}</th>
+                  <th>VI / EN</th>
+                  <th>{t('publish')}</th>
                   <th>{t('edit')}</th>
                 </tr>
               </thead>
               <tbody>
                 {query.data.items.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.title}</td>
                     <td>
-                      <span className={`status ${item.status.toLowerCase()}`}>{item.status}</span>
+                      <div className="table-title">
+                        {item.featuredMediaId && (
+                          <div className="table-thumbnail">
+                            <MediaPreview id={item.featuredMediaId} alt="" />
+                          </div>
+                        )}
+                        <span>
+                          {item.title}
+                          {item.featured && <small>★</small>}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status ${item.status.toLowerCase()}`}>
+                        {t(item.status.toLowerCase())}
+                      </span>
                     </td>
                     <td>{item.slug}</td>
+                    <td>{item.locale.toUpperCase()}</td>
+                    <td>
+                      {item.publishedAt
+                        ? new Date(item.publishedAt).toLocaleDateString(item.locale)
+                        : '—'}
+                    </td>
                     <td>
                       <Link
                         className="text-button"
@@ -137,7 +164,12 @@ const schema = z.object({
   featuredMediaId: z.string(),
   featured: z.boolean(),
   categoryIds: z.array(z.string()),
-  metadata: z.record(z.string()),
+  metadata: z
+    .record(z.string())
+    .refine(
+      (m) => !m.externalImageUrl || validHeroImageUrl(m.externalImageUrl),
+      'HTTPS · images.pexels.com / images.unsplash.com',
+    ),
 });
 type Values = z.infer<typeof schema>;
 const empty: Values = {
@@ -157,9 +189,9 @@ const metadataFields: Record<string, string[]> = {
   products: ['specification'],
   partners: ['website'],
   certifications: ['issuer', 'validUntil', 'documentMediaId'],
-  'hero-slides': ['link'],
+  'hero-slides': ['link', 'externalImageUrl'],
 };
-export function AdminContentEditor() {
+export function AdminContentEditor({ onClose }: { onClose?: () => void } = {}) {
   const { resource = 'posts', id = 'new' } = useParams();
   const { t, i18n } = useTranslation();
   const initialLocale =
@@ -169,10 +201,12 @@ export function AdminContentEditor() {
   const [mediaSearch, setMediaSearch] = useState('');
   const [documentDirty, setDocumentDirty] = useState(false);
   const [error, setError] = useState('');
-  const [feedback, setFeedback] = useState('');
+  const { toast, toastNode } = useAdminToast();
+  const { confirm, dialogNode } = useAdminDialog();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: empty });
+  const dirty = form.formState.isDirty || documentDirty;
   const query = useQuery({
     queryKey: ['admin', resource, id, locale],
     queryFn: async () =>
@@ -190,11 +224,15 @@ export function AdminContentEditor() {
       ).data,
   });
   const categories = useQuery({
-    queryKey: ['admin', 'category-picker', locale],
+    queryKey: ['admin', 'category-picker', resource, locale],
     queryFn: async () =>
-      (await api.get<PageResult<Content>>('/admin/categories', { params: { size: 50, locale } }))
-        .data,
-    enabled: resource === 'posts',
+      (
+        await api.get<PageResult<Content>>(
+          resource === 'products' ? '/admin/product-categories' : '/admin/categories',
+          { params: { size: 50, locale } },
+        )
+      ).data,
+    enabled: ['posts', 'products'].includes(resource),
   });
   const editor = useEditor({
     immediatelyRender: false,
@@ -250,7 +288,7 @@ export function AdminContentEditor() {
         : (await api.put<Content>(`/admin/${resource}/${id}`, body)).data;
     },
     onSuccess: async (data) => {
-      setFeedback(t('sent'));
+      toast(i18n.language === 'vi' ? 'Đã lưu nội dung.' : 'Content saved.');
       setError('');
       await invalidate();
       if (id === 'new') navigate(`/admin/${resource}/${data.id}?locale=${locale}`);
@@ -258,12 +296,7 @@ export function AdminContentEditor() {
     onError: (e) => setError(errorMessage(e)),
   });
   const changeStatus = async (status: string) => {
-    if (
-      status === 'ARCHIVED' &&
-      !window.confirm(i18n.language === 'vi' ? 'Lưu trữ nội dung này?' : 'Archive this content?')
-    )
-      return;
-    if (form.formState.isDirty || documentDirty) {
+    if (dirty) {
       setError(
         i18n.language === 'vi'
           ? 'Lưu nội dung trước khi đổi trạng thái.'
@@ -271,36 +304,55 @@ export function AdminContentEditor() {
       );
       return;
     }
-    try {
-      await api.patch(`/admin/${resource}/${id}/status`, { status });
-      await invalidate();
-      setFeedback(t('sent'));
-      setError('');
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+    const update = async () => {
+      try {
+        await api.patch(`/admin/${resource}/${id}/status`, { status });
+        await invalidate();
+        toast(i18n.language === 'vi' ? 'Đã cập nhật trạng thái.' : 'Status updated.');
+        setError('');
+      } catch (e) {
+        setError(errorMessage(e));
+      }
+    };
+    if (status === 'ARCHIVED')
+      await confirm(
+        i18n.language === 'vi'
+          ? 'Lưu trữ nội dung này? Nội dung sẽ không còn hiển thị công khai.'
+          : 'Archive this content? It will no longer be visible on the website.',
+        update,
+      );
+    else await update();
   };
   const values = form.watch();
   return (
     <>
+      {toastNode}
+      {dialogNode}
       <div className="admin-page-head">
         <div>
           <div className="breadcrumb">
             <Link to={`/admin/${resource}`}>{resources[resource] || resource}</Link> /{' '}
             {t(id === 'new' ? 'create' : 'edit')}
           </div>
-          <h1>{t(id === 'new' ? 'create' : 'edit')}</h1>
+          <h2 id="content-modal-title">
+            {t(id === 'new' ? 'create' : 'edit')} · {resources[resource] || resource}
+          </h2>
         </div>
         <div className="toolbar">
           <select
             aria-label="Translation language"
             value={locale}
             onChange={(e) => {
-              if (
-                (!form.formState.isDirty && !documentDirty) ||
-                window.confirm('Discard unsaved changes?')
-              )
-                setLocale(e.target.value);
+              const next = e.target.value;
+              if (!dirty) setLocale(next);
+              else
+                void confirm(
+                  i18n.language === 'vi'
+                    ? 'Bỏ các thay đổi chưa lưu để đổi ngôn ngữ?'
+                    : 'Discard unsaved changes and switch language?',
+                ).then((yes) => {
+                  if (yes) setLocale(next);
+                });
             }}
           >
             <option>vi</option>
@@ -309,6 +361,28 @@ export function AdminContentEditor() {
           <button className="button secondary" onClick={() => setPreview(!preview)}>
             {t('preview')}
           </button>
+          {onClose && (
+            <button
+              type="button"
+              className="content-modal-close"
+              data-editor-close
+              aria-label={i18n.language === 'vi' ? 'Đóng trình soạn thảo' : 'Close editor'}
+              disabled={save.isPending}
+              onClick={() => {
+                if (dirty)
+                  void confirm(
+                    i18n.language === 'vi'
+                      ? 'Bỏ thay đổi chưa lưu và đóng?'
+                      : 'Discard unsaved changes and close?',
+                  ).then((yes) => {
+                    if (yes) onClose();
+                  });
+                else onClose();
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
       </div>
       {query.isPending && id !== 'new' ? (
@@ -325,11 +399,6 @@ export function AdminContentEditor() {
           {error && (
             <p className="error" role="alert">
               {error}
-            </p>
-          )}
-          {feedback && (
-            <p className="success" role="status">
-              {feedback}
             </p>
           )}
           {preview ? (
@@ -352,133 +421,213 @@ export function AdminContentEditor() {
               noValidate
               onSubmit={form.handleSubmit((v) => save.mutate(v))}
             >
-              <div className="form-grid">
-                {(['title', 'slug', 'excerpt', 'seoTitle', 'seoDescription'] as const).map(
-                  (key) => (
-                    <Field
-                      key={key}
-                      id={key}
-                      label={t(key)}
-                      error={form.formState.errors[key]?.message}
-                      className={key === 'excerpt' ? 'wide' : ''}
-                    >
-                      {key === 'excerpt' || key === 'seoDescription' ? (
-                        <textarea
-                          id={key}
-                          {...form.register(key)}
-                          aria-describedby={`${key}-error`}
-                        />
-                      ) : (
-                        <input id={key} {...form.register(key)} aria-describedby={`${key}-error`} />
-                      )}
-                    </Field>
-                  ),
-                )}
-                <Field id="featuredMediaId" label="Media" className="wide">
-                  <input
-                    className="search"
-                    aria-label={
-                      i18n.language === 'vi' ? 'Tìm ảnh trong thư viện' : 'Search media library'
-                    }
-                    placeholder={t('search')}
-                    value={mediaSearch}
-                    onChange={(e) => setMediaSearch(e.target.value)}
-                  />
-                  <select id="featuredMediaId" {...form.register('featuredMediaId')}>
-                    <option value="">—</option>
-                    {values.featuredMediaId &&
-                      !media.data?.items.some((item) => item.id === values.featuredMediaId) && (
-                        <option value={values.featuredMediaId}>
-                          {i18n.language === 'vi' ? 'Ảnh đang sử dụng' : 'Current image'}
-                        </option>
-                      )}
-                    {media.data?.items
-                      .filter((item) => item.mimeType.startsWith('image/'))
-                      .map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.originalFilename} / {m.isPublic ? 'public' : 'private'}
-                        </option>
-                      ))}
-                  </select>
-                  <Link className="text-button" to="/admin/media" target="_blank">
-                    {i18n.language === 'vi'
-                      ? 'Mở thư viện để upload ảnh'
-                      : 'Open library to upload media'}
-                  </Link>
-                </Field>
-                {resource === 'posts' && (
-                  <Field
-                    id="categoryIds"
-                    label={i18n.language === 'vi' ? 'Danh mục' : 'Categories'}
-                    className="wide"
-                  >
-                    <select multiple id="categoryIds" {...form.register('categoryIds')}>
-                      {categories.data?.items.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.title}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                )}
-                {(metadataFields[resource] || []).map((key) => (
-                  <Field key={key} id={`metadata-${key}`} label={t(key)}>
-                    {key === 'routeKey' ? (
-                      <select id={`metadata-${key}`} {...form.register(`metadata.${key}`)}>
+              <div className="cms-editor-layout">
+                <div className="cms-editor-main">
+                  <div className="form-grid">
+                    {(['title', 'slug', 'excerpt'] as const).map((key) => (
+                      <Field
+                        key={key}
+                        id={key}
+                        label={t(key)}
+                        error={form.formState.errors[key]?.message}
+                        className={key === 'excerpt' ? 'wide' : ''}
+                      >
+                        {key === 'excerpt' ? (
+                          <textarea
+                            id={key}
+                            {...form.register(key)}
+                            aria-describedby={`${key}-error`}
+                          />
+                        ) : (
+                          <input
+                            id={key}
+                            {...form.register(key)}
+                            aria-describedby={`${key}-error`}
+                          />
+                        )}
+                      </Field>
+                    ))}
+                  </div>
+                  <label id="content-label">
+                    {i18n.language === 'vi' ? 'Nội dung' : 'Content'}
+                  </label>
+                  <div className="editor-toolbar">
+                    {[
+                      ['bold', Bold, () => editor?.chain().focus().toggleBold().run()],
+                      ['italic', Italic, () => editor?.chain().focus().toggleItalic().run()],
+                      [
+                        'heading',
+                        Heading2,
+                        () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+                      ],
+                      [
+                        'heading3',
+                        Heading3,
+                        () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
+                      ],
+                      ['bulletList', List, () => editor?.chain().focus().toggleBulletList().run()],
+                      ['undo', Undo2, () => editor?.chain().focus().undo().run()],
+                      ['redo', Redo2, () => editor?.chain().focus().redo().run()],
+                    ].map(([label, Icon, run]) => (
+                      <button
+                        key={String(label)}
+                        type="button"
+                        onClick={run as () => void}
+                        aria-label={t(String(label))}
+                        title={t(String(label))}
+                        aria-pressed={editor?.isActive(String(label)) || false}
+                      >
+                        {(() => {
+                          const ToolIcon = Icon as typeof Bold;
+                          return <ToolIcon size={18} />;
+                        })()}
+                      </button>
+                    ))}
+                  </div>
+                  <EditorContent editor={editor} className="tiptap-frame" />
+                </div>
+                <aside
+                  className="cms-editor-side"
+                  aria-label={i18n.language === 'vi' ? 'Thiết lập nội dung' : 'Content settings'}
+                >
+                  <h2>{i18n.language === 'vi' ? 'Thiết lập nội dung' : 'Content settings'}</h2>
+                  <div className="form-grid">
+                    {(['seoTitle', 'seoDescription'] as const).map((key) => (
+                      <Field
+                        key={key}
+                        id={key}
+                        label={t(key)}
+                        error={form.formState.errors[key]?.message}
+                      >
+                        <input id={key} {...form.register(key)} />
+                      </Field>
+                    ))}
+                    <Field id="featuredMediaId" label="Media" className="wide">
+                      <input
+                        className="search"
+                        aria-label={
+                          i18n.language === 'vi' ? 'Tìm ảnh trong thư viện' : 'Search media library'
+                        }
+                        placeholder={t('search')}
+                        value={mediaSearch}
+                        onChange={(e) => setMediaSearch(e.target.value)}
+                      />
+                      <select id="featuredMediaId" {...form.register('featuredMediaId')}>
                         <option value="">—</option>
-                        {[
-                          'gioi-thieu',
-                          'lich-su',
-                          'tam-nhin-su-menh',
-                          'nang-luc-san-xuat',
-                          'phat-trien-ben-vung',
-                          'tuyen-dung',
-                          'chinh-sach-bao-mat',
-                        ].map((k) => (
-                          <option key={k}>{k}</option>
-                        ))}
-                      </select>
-                    ) : key === 'documentMediaId' ? (
-                      <select id={`metadata-${key}`} {...form.register(`metadata.${key}`)}>
-                        <option value="">—</option>
+                        {values.featuredMediaId &&
+                          !media.data?.items.some((item) => item.id === values.featuredMediaId) && (
+                            <option value={values.featuredMediaId}>
+                              {i18n.language === 'vi' ? 'Ảnh đang sử dụng' : 'Current image'}
+                            </option>
+                          )}
                         {media.data?.items
-                          .filter((item) => item.mimeType === 'application/pdf')
-                          .map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.originalFilename}
+                          .filter((item) => item.mimeType.startsWith('image/'))
+                          .map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.originalFilename} / {m.isPublic ? 'public' : 'private'}
                             </option>
                           ))}
                       </select>
-                    ) : (
-                      <input
-                        id={`metadata-${key}`}
-                        type={key === 'validUntil' ? 'date' : 'text'}
-                        {...form.register(`metadata.${key}`)}
-                      />
+                      {values.featuredMediaId && (
+                        <MediaPreview
+                          key={values.featuredMediaId}
+                          id={values.featuredMediaId}
+                          alt={values.title}
+                        />
+                      )}
+                      <Link className="text-button" to="/admin/media" target="_blank">
+                        {i18n.language === 'vi'
+                          ? 'Mở thư viện để upload ảnh'
+                          : 'Open library to upload media'}
+                      </Link>
+                    </Field>
+                    {['posts', 'products'].includes(resource) && (
+                      <Field
+                        id="categoryIds"
+                        label={i18n.language === 'vi' ? 'Danh mục' : 'Categories'}
+                        className="wide"
+                      >
+                        <select multiple id="categoryIds" {...form.register('categoryIds')}>
+                          {categories.data?.items.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.title}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
                     )}
-                  </Field>
-                ))}
+                    {(metadataFields[resource] || []).map((key) => (
+                      <Field
+                        key={key}
+                        id={`metadata-${key}`}
+                        label={
+                          key === 'externalImageUrl'
+                            ? i18n.language === 'vi'
+                              ? 'URL ảnh minh họa'
+                              : 'Illustrative image URL'
+                            : t(key)
+                        }
+                        error={form.formState.errors.metadata?.[key]?.message}
+                      >
+                        {key === 'routeKey' ? (
+                          <select id={`metadata-${key}`} {...form.register(`metadata.${key}`)}>
+                            <option value="">—</option>
+                            {[
+                              'gioi-thieu',
+                              'lich-su',
+                              'tam-nhin-su-menh',
+                              'nang-luc-san-xuat',
+                              'phat-trien-ben-vung',
+                              'tuyen-dung',
+                              'chinh-sach-bao-mat',
+                            ].map((k) => (
+                              <option key={k}>{k}</option>
+                            ))}
+                          </select>
+                        ) : key === 'documentMediaId' ? (
+                          <select id={`metadata-${key}`} {...form.register(`metadata.${key}`)}>
+                            <option value="">—</option>
+                            {media.data?.items
+                              .filter((item) => item.mimeType === 'application/pdf')
+                              .map((item) => (
+                                <option key={item.id} value={item.id}>
+                                  {item.originalFilename}
+                                </option>
+                              ))}
+                          </select>
+                        ) : (
+                          <input
+                            id={`metadata-${key}`}
+                            type={key === 'validUntil' ? 'date' : 'text'}
+                            {...form.register(`metadata.${key}`)}
+                          />
+                        )}
+                        {key === 'externalImageUrl' && (
+                          <>
+                            <p className="field-help">
+                              {i18n.language === 'vi'
+                                ? 'HTTPS từ images.pexels.com hoặc images.unsplash.com. Ảnh thư viện được ưu tiên; URL dùng làm ảnh thay thế.'
+                                : 'HTTPS from images.pexels.com or images.unsplash.com. Library images take priority.'}
+                            </p>
+                            {validHeroImageUrl(values.metadata.externalImageUrl || '') && (
+                              <ContentImage
+                                src={values.metadata.externalImageUrl}
+                                alt=""
+                                width={320}
+                                height={180}
+                              />
+                            )}
+                          </>
+                        )}
+                      </Field>
+                    ))}
+                  </div>
+                  <label className="check-field">
+                    <input type="checkbox" {...form.register('featured')} />
+                    {i18n.language === 'vi' ? 'Nội dung nổi bật' : 'Featured content'}
+                  </label>
+                </aside>
               </div>
-              <label className="check-field">
-                <input type="checkbox" {...form.register('featured')} />
-                {i18n.language === 'vi' ? 'Nội dung nổi bật' : 'Featured content'}
-              </label>
-              <label id="content-label">{i18n.language === 'vi' ? 'Nội dung' : 'Content'}</label>
-              <div className="editor-toolbar">
-                {[
-                  ['Bold', () => editor?.chain().focus().toggleBold().run()],
-                  ['Italic', () => editor?.chain().focus().toggleItalic().run()],
-                  ['H2', () => editor?.chain().focus().toggleHeading({ level: 2 }).run()],
-                  ['H3', () => editor?.chain().focus().toggleHeading({ level: 3 }).run()],
-                  ['List', () => editor?.chain().focus().toggleBulletList().run()],
-                  ['Undo', () => editor?.chain().focus().undo().run()],
-                ].map(([label, run]) => (
-                  <button key={String(label)} type="button" onClick={run as () => void}>
-                    {String(label)}
-                  </button>
-                ))}
-              </div>
-              <EditorContent editor={editor} className="tiptap-frame" />
               <div className="form-actions">
                 <button className="button" disabled={save.isPending}>
                   {save.isPending ? t('loading') : t('save')}
@@ -486,7 +635,7 @@ export function AdminContentEditor() {
                 {id !== 'new' && (
                   <>
                     <span className={`status ${query.data?.status.toLowerCase()}`}>
-                      {query.data?.status}
+                      {query.data?.status && t(query.data.status.toLowerCase())}
                     </span>
                     <button
                       type="button"

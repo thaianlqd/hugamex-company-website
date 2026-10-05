@@ -89,11 +89,16 @@ describe('Public journeys', () => {
     );
   });
   it('shows API failure and can retry', async () => {
-    vi.mocked(api.get).mockRejectedValueOnce(new Error('offline'));
+    let productRequests = 0;
+    vi.mocked(api.get).mockImplementation(async (url) => {
+      if (url === '/public/products' && ++productRequests === 1) throw new Error('offline');
+      return { data: { items: [], total: 0, page: 0, size: 50, sections: [], settings: {} } };
+    });
     wrap(<PublicContent />, '/san-pham');
     expect(await screen.findByRole('alert')).toHaveTextContent('Không thể tải');
     fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
-    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(productRequests).toBe(2));
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
   it('renders structured article text and escapes markup', () => {
     wrap(

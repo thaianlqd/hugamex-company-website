@@ -33,6 +33,15 @@ async function adminLogin(page: Page) {
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/tai-khoan/);
   await page.getByRole('link', { name: 'CMS / Admin' }).click();
+  if (fixture.secret) {
+    const gate = page.locator('.mfa-card');
+    await expect(gate).toBeVisible();
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.screenshot({ path: `../docs/qa/phase2/admin-mfa-${width}.png`, fullPage: true });
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    }
+  }
   if (!fixture.secret) {
     await page.getByRole('button', { name: 'Thiết lập ứng dụng xác thực' }).click();
     fixture.secret = await page.locator('.mfa-secret').innerText();
@@ -46,12 +55,12 @@ async function adminLogin(page: Page) {
     const recovery = fixture.recoveryCodes?.pop();
     if (!recovery)
       throw new Error('Regenerate local QA recovery codes before rerunning the suite.');
-    await page.getByRole('button', { name: 'Recovery code', exact: true }).click();
-    await page.getByLabel('Recovery code', { exact: true }).fill(recovery);
+    await page.getByRole('button', { name: 'Mã khôi phục', exact: true }).click();
+    await page.getByLabel('Mã khôi phục', { exact: true }).fill(recovery);
     await page.getByRole('button', { name: 'Xác thực', exact: true }).click();
     writeFileSync(fixturePath, JSON.stringify(fixture), { mode: 0o600 });
   }
-  await expect(page.getByRole('navigation', { name: 'Admin' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: /Admin|Quản trị/ })).toBeVisible();
 }
 test('Public layouts, language, mobile navigation and anonymous admin guard', async ({ page }) => {
   await page.goto('/');
@@ -79,7 +88,7 @@ test('Public layouts, language, mobile navigation and anonymous admin guard', as
 });
 test('Register → verify → login → refresh restore → account → password reset', async ({ page }) => {
   const email = `journey-${randomUUID()}@example.invalid`;
-  const password = randomBytes(24).toString('base64url');
+  let password = randomBytes(24).toString('base64url');
   await page.goto('/dang-ky');
   await page.getByLabel('Họ và tên', { exact: true }).fill('QA development fixture');
   await page.getByLabel('Email', { exact: true }).fill(email);
@@ -101,9 +110,9 @@ test('Register → verify → login → refresh restore → account → password
   await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/tai-khoan/);
-  await expect(page.getByText(email, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Email', { exact: true })).toHaveValue(email);
   await page.reload();
-  await expect(page.getByText(email, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Email', { exact: true })).toHaveValue(email);
   const storage = await page.evaluate(() => ({
     local: Object.keys(localStorage),
     session: Object.keys(sessionStorage),
@@ -112,6 +121,27 @@ test('Register → verify → login → refresh restore → account → password
   expect(storage.local).not.toContain('refreshToken');
   expect(storage.session).toEqual([]);
   await page.goto('/admin');
+  await expect(page).toHaveURL(/tai-khoan/);
+  await page.goto('/tai-khoan');
+  await page.getByLabel('Họ và tên', { exact: true }).fill('Updated QA profile');
+  await page.getByRole('button', { name: 'Lưu', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Đã cập nhật thông tin cá nhân');
+  await page.reload();
+  await expect(page.getByLabel('Họ và tên', { exact: true })).toHaveValue('Updated QA profile');
+  await page.getByRole('link', { name: 'Đổi mật khẩu', exact: true }).click();
+  const nextPassword = randomBytes(24).toString('base64url');
+  await page.getByLabel('Mật khẩu hiện tại', { exact: true }).fill(password);
+  await page.getByLabel('Mật khẩu mới', { exact: true }).fill(nextPassword);
+  await page.getByLabel('Xác nhận mật khẩu mới', { exact: true }).fill('wrong confirmation');
+  await page.getByRole('button', { name: 'Cập nhật mật khẩu', exact: true }).click();
+  await expect(page.getByText('Mật khẩu xác nhận chưa khớp.')).toBeVisible();
+  await page.getByLabel('Xác nhận mật khẩu mới', { exact: true }).fill(nextPassword);
+  await page.getByRole('button', { name: 'Cập nhật mật khẩu', exact: true }).click();
+  await expect(page).toHaveURL(/dang-nhap/);
+  password = nextPassword;
+  await page.getByLabel('Email', { exact: true }).fill(email);
+  await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/tai-khoan/);
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click();
   await page.goto('/quen-mat-khau');
@@ -141,6 +171,7 @@ test('Admin login → MFA → upload → create draft → preview → publish �
   });
   await adminLogin(page);
   await page.goto('/admin/media');
+  await page.locator('.media-upload summary').click();
   await page.locator('#mediaFile').setInputFiles({
     name: 'qa-illustration.png',
     mimeType: 'image/png',
@@ -151,8 +182,8 @@ test('Admin login → MFA → upload → create draft → preview → publish �
   });
   await page.getByLabel('Alt text').fill('Development illustration');
   await page.getByLabel('Công khai').check();
-  await page.getByRole('button', { name: 'Upload', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Thông tin đã được gửi');
+  await page.getByRole('button', { name: 'Tải lên', exact: true }).click();
+  await expect(page.locator('.admin-toast-region')).toContainText('Đã tải tệp lên');
   await page.goto('/admin/posts/new');
   const slug = `qa-story-${randomUUID()}`;
   await page.getByLabel('Tiêu đề', { exact: true }).fill('Nội dung minh họa — hành trình sản xuất');
@@ -163,7 +194,9 @@ test('Admin login → MFA → upload → create draft → preview → publish �
   await page
     .getByRole('textbox', { name: 'Content editor' })
     .fill('Nội dung minh họa để kiểm thử CMS. Không phải thông tin chính thức của doanh nghiệp.');
-  await page.getByLabel('Media', { exact: true }).selectOption({ label: 'qa-illustration.png / public' });
+  await page
+    .getByLabel('Media', { exact: true })
+    .selectOption({ label: 'qa-illustration.png / public' });
   await page.getByRole('button', { name: 'Lưu', exact: true }).click();
   await expect(page).toHaveURL(/admin\/posts\/[0-9a-f-]+/);
   await page.getByRole('button', { name: 'Xem trước', exact: true }).click();
@@ -171,7 +204,7 @@ test('Admin login → MFA → upload → create draft → preview → publish �
   await expect(page.locator('.preview img')).toBeVisible();
   await page.getByRole('button', { name: 'Xem trước', exact: true }).click();
   await page.getByRole('button', { name: 'Xuất bản', exact: true }).click();
-  await expect(page.locator('.form-actions .status')).toHaveText('PUBLISHED');
+  await expect(page.locator('.form-actions .status')).toHaveText('Đã xuất bản');
   await page.goto('/tin-tuc');
   await page.locator(`a[href="/tin-tuc/${slug}"]`).click();
   await expect(page).toHaveURL(new RegExp(slug));
@@ -200,20 +233,28 @@ test('CMS management screens, editor accessibility and mobile focus navigation',
     'products',
     'partners',
     'certifications',
-    'hero-slides',
-    'homepage',
+    'product-categories',
     'users',
     'roles',
     'audit-logs',
-    'settings',
   ]) {
     await page.goto(`/admin/${path}`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.waitForLoadState('networkidle');
     await expect(page.locator('.state[role="alert"]')).toHaveCount(0);
   }
-  await page.goto('/admin/posts/new');
+  await page.goto('/admin/posts');
+  await expect(page.locator('a[href="/admin/homepage"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/admin/hero-slides"]')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Tạo mới', exact: true }).click();
+  await expect(page.locator('.content-editor-modal[open]')).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Content editor' })).toBeVisible();
+  expect(
+    await page.locator('.content-editor-modal').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return Math.abs(r.left + r.width / 2 - innerWidth / 2) < 2 && r.top >= 20;
+    }),
+  ).toBe(true);
   const desktop = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze();
@@ -224,9 +265,91 @@ test('CMS management screens, editor accessibility and mobile focus navigation',
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
+  expect(
+    await page.locator('.content-editor-modal').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const save = el.querySelector('.cms-form > .form-actions')!.getBoundingClientRect();
+      return r.left >= 9 && r.right <= innerWidth - 9 && save.bottom <= innerHeight + 1;
+    }),
+  ).toBe(true);
+  await page.getByLabel('Tiêu đề', { exact: true }).fill('Unsaved popup content');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.admin-dialog[open]')).toBeVisible();
+  await page
+    .locator('.admin-dialog[open]')
+    .getByRole('button', { name: 'Hủy', exact: true })
+    .click();
+  await expect(page.getByLabel('Tiêu đề', { exact: true })).toHaveValue('Unsaved popup content');
+  await page.keyboard.press('Escape');
+  await page
+    .locator('.admin-dialog[open]')
+    .getByRole('button', { name: 'Xác nhận', exact: true })
+    .click();
+  await expect(page.locator('.content-editor-modal[open]')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Tạo mới', exact: true })).toBeFocused();
   await page.getByRole('button', { name: 'Mở menu', exact: true }).click();
   await expect(page.locator('#admin-drawer')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#admin-drawer')).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Mở menu', exact: true })).toBeFocused();
+});
+
+test('Account screens and explicit CMS logout remain usable on mobile', async ({ page }) => {
+  await adminLogin(page);
+  const adminOrigin = new URL(page.url()).origin;
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const [path, name] of [
+      ['/tai-khoan', 'profile'],
+      ['/tai-khoan/doi-mat-khau', 'password'],
+      ['/tai-khoan/bao-mat', 'security'],
+    ]) {
+      await page.goto(adminOrigin + path);
+      await page.waitForLoadState('networkidle');
+      await expect(page.locator('.account-panel')).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      await page.screenshot({
+        path: `../docs/qa/phase2/admin-account-${name}-${width}.png`,
+        fullPage: true,
+        mask: [page.locator('#profileEmail')],
+        maskColor: '#dce1ea',
+      });
+    }
+  }
+  await page.goto('/admin');
+  await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click();
+  await expect(page).toHaveURL(/dang-nhap/);
+  await page.goto('/admin');
+  await expect(page).toHaveURL(/dang-nhap/);
+});
+
+test('Product category → popup product → publish → public category filter', async ({ page }) => {
+  await adminLogin(page);
+  const key = randomUUID();
+  await page.goto('/admin/product-categories');
+  await page.getByRole('link', { name: 'Tạo mới', exact: true }).click();
+  await expect(page.locator('.content-editor-modal[open]')).toBeVisible();
+  await page.getByLabel('Tiêu đề', { exact: true }).fill('QA product category');
+  await page.getByLabel('Đường dẫn', { exact: true }).fill(`qa-product-category-${key}`);
+  await page.getByRole('button', { name: 'Lưu', exact: true }).click();
+  await expect(page).toHaveURL(/product-categories\/[0-9a-f-]+/);
+  await page.getByRole('button', { name: 'Xuất bản', exact: true }).click();
+  await expect(page.locator('.form-actions .status')).toHaveText('Đã xuất bản');
+  const categoryId = new URL(page.url()).pathname.split('/').at(-1)!;
+  await page.getByRole('button', { name: 'Đóng trình soạn thảo', exact: true }).click();
+  await page.goto('/admin/products/new');
+  await page.getByLabel('Tiêu đề', { exact: true }).fill('QA classified garment');
+  await page.getByLabel('Đường dẫn', { exact: true }).fill(`qa-product-${key}`);
+  await page.getByLabel('Danh mục', { exact: true }).selectOption(categoryId);
+  await page.getByRole('button', { name: 'Lưu', exact: true }).click();
+  await expect(page).toHaveURL(/products\/[0-9a-f-]+/);
+  await page.getByRole('button', { name: 'Xuất bản', exact: true }).click();
+  await expect(page.locator('.form-actions .status')).toHaveText('Đã xuất bản');
+  await page.goto('/san-pham');
+  await page.getByRole('combobox', { name: 'Nhóm sản phẩm', exact: true }).selectOption(categoryId);
+  await expect(page.locator('.catalog-grid .content-card')).toHaveCount(1);
+  await expect(page.locator('.catalog-grid')).toContainText('QA classified garment');
 });

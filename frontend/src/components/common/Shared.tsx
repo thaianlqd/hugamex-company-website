@@ -4,6 +4,8 @@ import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Content, RichNode } from '../../types';
 import type { ReactNode } from 'react';
+import ContentImage from './ContentImage';
+import { Reveal } from './Reveal';
 export function Seo({
   title,
   description,
@@ -112,7 +114,15 @@ export function State({
   const { t } = useTranslation();
   return (
     <div className="state" role={error ? 'alert' : 'status'}>
-      {t(loading ? 'loading' : error ? 'error' : 'empty')}
+      {loading ? (
+        <div className="skeleton" aria-label={t('loading')}>
+          <span />
+          <span />
+          <span />
+        </div>
+      ) : (
+        t(error ? 'error' : 'empty')
+      )}
       {error && retry && <button onClick={retry}>{t('retry')}</button>}
     </div>
   );
@@ -165,26 +175,41 @@ export function RichText({ node }: { node: RichNode }) {
 }
 export function ContentCard({ item, base }: { item: Content; base: string }) {
   return (
-    <article className="content-card">
-      <Link to={`${base}/${item.canonicalSlug || item.slug}`}>
-        <img
-          src={
-            item.featuredMediaId
-              ? `${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/media/${item.featuredMediaId}`
-              : '/assets/garment-study.svg'
-          }
-          alt={item.featuredMediaAlt || item.title}
-          width="600"
-          height="450"
-          loading="lazy"
-        />
-        <div className="meta">
-          {item.publishedAt && new Date(item.publishedAt).toLocaleDateString(item.locale)}
-        </div>
-        <h3>{item.title}</h3>
-        <p>{item.excerpt}</p>
-        <ArrowUpRight className="card-arrow" size={24} />
-      </Link>
-    </article>
+    <Reveal className="content-card-reveal">
+      <article className="content-card">
+        <Link to={`${base}/${item.canonicalSlug || item.slug}`}>
+          <ContentImage
+            src={
+              item.featuredMediaId
+                ? `${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/media/${item.featuredMediaId}`
+                : '/assets/garment-study.svg'
+            }
+            alt={item.featuredMediaAlt || item.title}
+            width="600"
+            height="450"
+            loading="lazy"
+          />
+          {base === '/tin-tuc' && item.publishedAt && (
+            <div className="meta">{new Date(item.publishedAt).toLocaleDateString(item.locale)}</div>
+          )}
+          <h3>{item.title}</h3>
+          <p>{item.excerpt}</p>
+          <span className="card-action">
+            <span>
+              {item.locale === 'vi'
+                ? base === '/tin-tuc'
+                  ? 'Đọc bài viết'
+                  : base === '/san-pham'
+                    ? 'Khám phá sản phẩm'
+                    : 'Xem chi tiết'
+                : base === '/tin-tuc'
+                  ? 'Read article'
+                  : 'Explore details'}
+            </span>
+            <ArrowUpRight className="card-arrow" size={20} />
+          </span>
+        </Link>
+      </article>
+    </Reveal>
   );
 }

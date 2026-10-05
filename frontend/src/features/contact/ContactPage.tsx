@@ -8,6 +8,8 @@ import { api, csrf, errorMessage } from '../../services/api';
 import { Seo } from '../../components/common/Shared';
 import Field from '../../components/common/Field';
 import type { Site } from '../../types';
+import LocationMap from '../../components/public/LocationMap';
+import { MapPin, Mail, Phone, ArrowUpRight } from 'lucide-react';
 export default function ContactPage() {
   const { t, i18n } = useTranslation();
   const [error, setError] = useState('');
@@ -61,23 +63,57 @@ export default function ContactPage() {
         </h1>
       </header>
       <div className="page-body contact-layout">
-        <div>
+        <div className="contact-office">
+          <div className="eyebrow">{i18n.language === 'vi' ? 'TRỤ SỞ CHÍNH' : 'HEAD OFFICE'}</div>
           <h2>{t('company')}</h2>
-          <p>
+          <p className="contact-office-address">
+            <MapPin size={19} />
             {site.data?.settings.contactAddress ||
               (i18n.language === 'vi'
                 ? 'Thông tin liên hệ chính thức chờ xác nhận. Bạn có thể gửi yêu cầu qua biểu mẫu.'
                 : 'Official contact details await confirmation. Send your enquiry using this form.')}
           </p>
-          {site.data?.settings.contactEmail && <p>{site.data.settings.contactEmail}</p>}
-          {site.data?.settings.contactPhone && <p>{site.data.settings.contactPhone}</p>}
+          {site.data?.settings.contactEmail && (
+            <p>
+              <a className="contact-link" href={`mailto:${site.data.settings.contactEmail}`}>
+                <Mail size={16} />
+                {site.data.settings.contactEmail}
+              </a>
+            </p>
+          )}
+          {site.data?.settings.contactPhone && (
+            <p>
+              <a
+                className="contact-link"
+                href={`tel:${site.data.settings.contactPhone.replace(/[^+0-9]/g, '')}`}
+              >
+                <Phone size={16} />
+                {site.data.settings.contactPhone}
+              </a>
+            </p>
+          )}
+          {site.data?.settings.contactFax && <p>Fax: {site.data.settings.contactFax}</p>}
+          {site.data?.settings.contactAddress && (
+            <LocationMap
+              address={site.data.settings.contactAddress}
+              label={i18n.language === 'vi' ? 'Trụ sở chính HUGAMEX' : 'HUGAMEX head office'}
+              compact
+            />
+          )}
           <p className="notice">
             {i18n.language === 'vi'
               ? 'Thông tin được lưu để bộ phận phụ trách phản hồi yêu cầu của bạn.'
               : 'Your information is stored so our team can respond to your enquiry.'}
           </p>
         </div>
-        <form onSubmit={submit} noValidate>
+        <form className="contact-enquiry-form" onSubmit={submit} noValidate>
+          <div className="eyebrow">HUGAMEX / ENQUIRY</div>
+          <h2>{i18n.language === 'vi' ? 'Gửi lời nhắn cho chúng tôi' : 'Send us a message'}</h2>
+          <p>
+            {i18n.language === 'vi'
+              ? 'Chia sẻ nhu cầu của bạn. Chúng tôi sẽ tiếp nhận để trao đổi thêm.'
+              : 'Tell us what you need so we can continue the conversation.'}
+          </p>
           <div className="form-grid">
             {(
               [
@@ -135,6 +171,7 @@ export default function ContactPage() {
             disabled={form.formState.isSubmitting}
           >
             {form.formState.isSubmitting ? t('loading') : t('send')}
+            <ArrowUpRight size={17} />
           </button>
           <LinkPrivacy />
         </form>

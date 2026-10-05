@@ -1,0 +1,162 @@
+{
+  "checkedAt": "2026-10-05T13:04:27.214Z",
+  "layouts": [
+    {
+      "name": "home",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "article",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "article",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "article",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "products",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "network",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "contact",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "article",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "home-390",
+      "violations": []
+    },
+    {
+      "name": "products-390",
+      "violations": []
+    },
+    {
+      "name": "network-390",
+      "violations": []
+    },
+    {
+      "name": "contact-390",
+      "violations": []
+    },
+    {
+      "name": "article-390",
+      "violations": []
+    },
+    {
+      "name": "home-1440",
+      "violations": []
+    },
+    {
+      "name": "products-1440",
+      "violations": []
+    },
+    {
+      "name": "network-1440",
+      "violations": []
+    },
+    {
+      "name": "contact-1440",
+      "violations": []
+    },
+    {
+      "name": "article-1440",
+      "violations": []
+    }
+  ],
+  "interactions": [
+    "product search / group / sort / clear / empty-state reset",
+    "facility search keeps separate headquarters",
+    "article TOC / checklist / anchor offset",
+    "expanded English article"
+  ],
+  "pageErrors": [],
+  "mutationsBlocked": 0,
+  "maps": [
+    {
+      "externalFrameLoaded": true,
+      "hasMap": true,
+      "frameCount": 4
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "width": 390,
+    "directions": "head office",
+    "violations": 0,
+    "overflow": false,
+    "escapeRestoresFocus": true
+  },
+  {
+    "width": 1440,
+    "directions": "head office",
+    "violations": 0,
+    "overflow": false,
+    "escapeRestoresFocus": true
+  }
+]

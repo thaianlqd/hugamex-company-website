@@ -10,6 +10,10 @@ test('Public pages meet automated WCAG A/AA checks at desktop and mobile widths'
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await page.waitForLoadState('networkidle');
+      if (path === '/') {
+        await page.locator('.hero').hover();
+        await expect(page.locator('.hero-copy > div').nth(1)).toHaveCSS('opacity', '1');
+      }
       const result = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
         .analyze();

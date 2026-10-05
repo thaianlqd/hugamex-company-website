@@ -23,7 +23,12 @@ function CredentialsPage() {
   const { pathname, search } = useLocation();
   const register = pathname === '/dang-ky';
   const forgot = pathname === '/quen-mat-khau';
-  const title = t(register ? 'register' : forgot ? 'forgot' : 'login');
+  const title =
+    appSurface === 'admin' && !forgot
+      ? i18n.language === 'vi'
+        ? 'Đăng nhập quản trị'
+        : 'Admin sign in'
+      : t(register ? 'register' : forgot ? 'forgot' : 'login');
   const auth = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -77,6 +82,13 @@ function CredentialsPage() {
       <Seo title={title} path={pathname} />
       <div className="eyebrow">HUGAMEX / {appSurface === 'admin' ? 'ADMIN' : 'ACCOUNT'}</div>
       <h1>{title}</h1>
+      {appSurface === 'admin' && (
+        <p className="auth-description">
+          {i18n.language === 'vi'
+            ? 'Đăng nhập để quản lý nội dung và thông tin website HUGAMEX.'
+            : 'Sign in to manage HUGAMEX website content and information.'}
+        </p>
+      )}
       {search.includes('oauth=') && (
         <p className="notice">
           {i18n.language === 'vi'
@@ -140,11 +152,18 @@ function CredentialsPage() {
           Google
         </a>
       )}
+      {appSurface === 'admin' && (
+        <p className="auth-security-note">
+          {i18n.language === 'vi'
+            ? 'Tài khoản quản trị được bảo vệ bằng xác thực hai bước.'
+            : 'Administrative accounts are protected with two-factor authentication.'}
+        </p>
+      )}
       <div className="auth-links">
-        <Link to="/dang-nhap">{t('login')}</Link>
+        {(forgot || appSurface !== 'admin') && <Link to="/dang-nhap">{t('login')}</Link>}
         {appSurface !== 'admin' && <Link to="/dang-ky">{t('register')}</Link>}
         <Link to="/quen-mat-khau">{t('forgot')}</Link>
-        <Link to="/xac-thuc-email">{t('verify')}</Link>
+        {appSurface !== 'admin' && <Link to="/xac-thuc-email">{t('verify')}</Link>}
       </div>
     </div>
   );

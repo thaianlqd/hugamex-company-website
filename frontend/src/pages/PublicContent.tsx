@@ -5,6 +5,14 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { api, errorMessage } from '../services/api';
 import { ContentCard, RichText, Seo, State, ArrowLink } from '../components/common/Shared';
+import CorporateBody from '../components/public/CorporateBody';
+import BranchNetwork from '../components/public/BranchNetwork';
+import ProductCatalog from '../components/public/ProductCatalog';
+import ArticleBody from '../components/public/ArticleBody';
+import LocationMap from '../components/public/LocationMap';
+import { Search } from 'lucide-react';
+import ContentImage from '../components/common/ContentImage';
+import { Reveal } from '../components/common/Reveal';
 import type { Content, PageResult } from '../types';
 export const routes: Record<string, [string, string, string?]> = {
   '/gioi-thieu': ['about', 'pages', 'gioi-thieu'],
@@ -51,15 +59,16 @@ export default function PublicContent() {
           {
             params: {
               locale: i18n.language,
-              search,
+              search: single || resource === 'branches' ? '' : search,
               page,
               size: 9,
-              category: category || undefined,
+              category: resource === 'posts' ? category || undefined : undefined,
             },
           },
         )
       ).data,
     retry: false,
+    enabled: !(resource === 'products' && !single),
   });
   const categories = useQuery({
     queryKey: ['categories', i18n.language],
@@ -115,13 +124,15 @@ export default function PublicContent() {
         }
         article={resource === 'posts' && article ? { publishedAt: article.publishedAt } : undefined}
       />
-      <header className="page-header">
+      <header className={`page-header${resource === 'posts' && single ? ' journal-header' : ''}`}>
         <div className="breadcrumb">
           <Link to="/">{t('home')}</Link> / {detail && <Link to={base}>{t(label)} / </Link>}
           {title}
         </div>
         <div className="eyebrow">HUGAMEX / {t(label).toUpperCase()}</div>
-        <h1>{title}</h1>
+        <Reveal>
+          <h1>{title}</h1>
+        </Reveal>
         {article?.excerpt && <p>{article.excerpt}</p>}
         {article?.publishedAt && resource === 'posts' && (
           <div className="meta">
@@ -136,21 +147,28 @@ export default function PublicContent() {
             <ArrowLink to="/gioi-thieu/tam-nhin-su-menh">{t('vision')}</ArrowLink>
           </div>
         )}
-        {!single && (
-          <div className="toolbar">
-            <label htmlFor="public-search">{t('search')}</label>
-            <input
-              className="search"
-              id="public-search"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
-            />
+        {!single && !['products', 'branches'].includes(resource) && (
+          <div className="public-filter">
+            <label className="catalog-search" htmlFor="public-search">
+              <Search size={19} aria-hidden="true" />
+              <span className="sr-only">{t('search')}</span>
+              <input
+                id="public-search"
+                type="search"
+                maxLength={200}
+                placeholder={
+                  i18n.language === 'vi' ? 'Tìm kiếm bài viết, chủ đề…' : 'Search articles, topics…'
+                }
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(0);
+                }}
+              />
+            </label>
             {resource === 'posts' && (
               <select
-                aria-label="Category"
+                aria-label={i18n.language === 'vi' ? 'Danh mục' : 'Category'}
                 value={category}
                 onChange={(e) => {
                   setCategory(e.target.value);
@@ -167,7 +185,9 @@ export default function PublicContent() {
             )}
           </div>
         )}
-        {missing ? (
+        {resource === 'products' && !single ? (
+          <ProductCatalog />
+        ) : missing ? (
           <div className="state">
             <h2>404</h2>
             <p>
@@ -186,7 +206,7 @@ export default function PublicContent() {
         ) : article ? (
           <>
             {article.featuredMediaId && (
-              <img
+              <ContentImage
                 className="article-hero"
                 src={`${api.defaults.baseURL}/media/${article.featuredMediaId}`}
                 alt={article.featuredMediaAlt || article.title}
@@ -194,73 +214,83 @@ export default function PublicContent() {
                 height="675"
               />
             )}
-            <div className="prose">
-              <RichText node={article.content} />
-              {['branches', 'products', 'partners', 'certifications'].includes(resource) && (
-                <dl className="branch-details">
-                  {Object.entries(article.metadata)
-                    .filter(
-                      ([key]) =>
-                        !!article.metadata[key] &&
-                        !['mapUrl', 'latitude', 'longitude', 'documentMediaId', 'website'].includes(
-                          key,
-                        ),
+            {resource === 'pages' ? (
+              <CorporateBody article={article} />
+            ) : resource === 'posts' ? (
+              <ArticleBody
+                article={article}
+                feedback={shareFeedback}
+                onShare={() => {
+                  void navigator.clipboard
+                    .writeText(window.location.href)
+                    .then(() =>
+                      setShareFeedback(
+                        i18n.language === 'vi' ? 'Đã sao chép liên kết.' : 'Link copied.',
+                      ),
                     )
-                    .map(([key, value]) => (
-                      <div key={key}>
-                        <dt>{t(key)}</dt>
-                        <dd>{value}</dd>
-                      </div>
-                    ))}
-                  {article.metadata.mapUrl && (
-                    <a
-                      className="arrow-link"
-                      href={article.metadata.mapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Google Maps
-                    </a>
-                  )}
-                </dl>
-              )}
-              {article.metadata.website && (
-                <a
-                  className="arrow-link"
-                  href={article.metadata.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t('website')}
-                </a>
-              )}
-              {article.metadata.documentMediaId && (
-                <a
-                  className="arrow-link"
-                  href={`${api.defaults.baseURL}/media/${article.metadata.documentMediaId}`}
-                >
-                  PDF
-                </a>
-              )}
-              {resource === 'posts' && (
-                <button
-                  className="arrow-link"
-                  onClick={() => {
-                    void navigator.clipboard
-                      .writeText(window.location.href)
-                      .then(() =>
-                        setShareFeedback(
-                          i18n.language === 'vi' ? 'Đã sao chép liên kết.' : 'Link copied.',
-                        ),
+                    .catch((e) => setShareFeedback(errorMessage(e)));
+                }}
+              />
+            ) : (
+              <div className="prose">
+                <RichText node={article.content} />
+                {['branches', 'products', 'partners', 'certifications'].includes(resource) && (
+                  <dl className="branch-details">
+                    {Object.entries(article.metadata)
+                      .filter(
+                        ([key]) =>
+                          !!article.metadata[key] &&
+                          ![
+                            'mapUrl',
+                            'latitude',
+                            'longitude',
+                            'documentMediaId',
+                            'website',
+                          ].includes(key),
                       )
-                      .catch((e) => setShareFeedback(errorMessage(e)));
-                  }}
-                >
-                  {i18n.language === 'vi' ? 'Sao chép liên kết' : 'Copy article link'}
-                </button>
-              )}
-              {shareFeedback && <p role="status">{shareFeedback}</p>}
-            </div>
+                      .map(([key, value]) => (
+                        <div key={key}>
+                          <dt>{t(key)}</dt>
+                          <dd>{value}</dd>
+                        </div>
+                      ))}
+                    {article.metadata.mapUrl && (
+                      <a
+                        className="arrow-link"
+                        href={article.metadata.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Google Maps
+                      </a>
+                    )}
+                  </dl>
+                )}
+                {article.metadata.website && (
+                  <a
+                    className="arrow-link"
+                    href={article.metadata.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('website')}
+                  </a>
+                )}
+                {article.metadata.documentMediaId && (
+                  <a
+                    className="arrow-link"
+                    href={`${api.defaults.baseURL}/media/${article.metadata.documentMediaId}`}
+                  >
+                    PDF
+                  </a>
+                )}
+              </div>
+            )}
+            {resource === 'branches' && article.metadata.address && (
+              <div className="facility-map">
+                <LocationMap address={article.metadata.address} label={article.title} />
+              </div>
+            )}
             {resource === 'posts' &&
               !!related.data?.items.filter((item) => item.id !== article.id).length && (
                 <section className="related-posts">
@@ -276,34 +306,22 @@ export default function PublicContent() {
                 </section>
               )}
           </>
+        ) : isBranch ? (
+          <BranchNetwork items={listing?.items || []} />
         ) : listing?.items.length ? (
           <>
-            <div className={isBranch ? 'branch-network' : 'article-grid'}>
+            <h2 className="listing-title">
+              {i18n.language === 'vi'
+                ? resource === 'posts'
+                  ? 'Tin tức & góc nhìn'
+                  : 'Khám phá thêm'
+                : resource === 'posts'
+                  ? 'News & perspectives'
+                  : 'Explore more'}
+            </h2>
+            <div className={isBranch ? '' : 'article-grid'}>
               {isBranch ? (
-                <>
-                  <div>
-                    {listing.items.map((item) => (
-                      <article key={item.id} className="branch-row">
-                        <h2>{item.title}</h2>
-                        <p>{item.metadata.address || item.excerpt}</p>
-                        <p>
-                          {item.metadata.phone} {item.metadata.email}
-                        </p>
-                        <ArrowLink to={`/he-thong/${item.canonicalSlug || item.slug}`}>
-                          {t('viewAll')}
-                        </ArrowLink>
-                      </article>
-                    ))}
-                  </div>
-                  <div className="network-placeholder">
-                    <span>VIETNAM</span>
-                    <p>
-                      {i18n.language === 'vi'
-                        ? 'Chọn một địa điểm để xem địa chỉ và bản đồ đã xác minh.'
-                        : 'Choose a location for verified address and map details.'}
-                    </p>
-                  </div>
-                </>
+                <BranchNetwork items={listing.items} />
               ) : (
                 listing.items.map((item) => (
                   <ContentCard key={item.id} item={item} base={pathname} />
@@ -326,7 +344,16 @@ export default function PublicContent() {
             </div>
           </>
         ) : (
-          <State />
+          <div className="public-empty">
+            <div className="eyebrow">HUGAMEX</div>
+            <h2>{i18n.language === 'vi' ? 'Cùng khám phá thêm' : 'Let’s explore further'}</h2>
+            <p>
+              {i18n.language === 'vi'
+                ? 'Chưa có nội dung phù hợp. Bạn có thể đổi bộ lọc hoặc chia sẻ nhu cầu với chúng tôi.'
+                : 'No matching content yet. Try another filter or share your requirements with us.'}
+            </p>
+            <ArrowLink to="/lien-he">{t('contact')}</ArrowLink>
+          </div>
         )}
       </div>
     </>

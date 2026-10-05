@@ -35,7 +35,7 @@ public class ContentValidation {
           case "PRODUCT" -> Set.of("specification");
           case "PARTNER" -> Set.of("website");
           case "CERTIFICATION" -> Set.of("issuer", "validUntil", "documentMediaId");
-          case "HERO" -> Set.of("link");
+          case "HERO" -> Set.of("link", "externalImageUrl");
           default -> Set.of();
         };
     if (!keys.containsAll(r.metadata().keySet()))
@@ -45,6 +45,7 @@ public class ContentValidation {
             (k, v) -> {
               if (v == null || v.length() > 1000) throw new ApiException(400, "Metadata too long.");
               if (Set.of("mapUrl", "website").contains(k) && !v.isBlank()) url(v);
+              if (k.equals("externalImageUrl") && !v.isBlank()) externalImage(v);
               if (k.equals("routeKey")
                   && !v.matches(
                       "gioi-thieu|lich-su|tam-nhin-su-menh|nang-luc-san-xuat|phat-trien-ben-vung|tuyen-dung|chinh-sach-bao-mat"))
@@ -62,8 +63,23 @@ public class ContentValidation {
               }
               if (k.equals("documentMediaId") && !v.isBlank()) UUID.fromString(v);
             });
-    if (!kind.equals("POST") && !r.categoryIds().isEmpty())
-      throw new ApiException(400, "Categories are only available for posts.");
+    if (!Set.of("POST", "PRODUCT").contains(kind) && !r.categoryIds().isEmpty())
+      throw new ApiException(400, "Categories are only available for posts and products.");
+  }
+
+  private void externalImage(String value) {
+    try {
+      URI u = URI.create(value);
+      if (!"https".equals(u.getScheme())
+          || u.getHost() == null
+          || !Set.of("images.pexels.com", "images.unsplash.com")
+              .contains(u.getHost().toLowerCase(Locale.ROOT))
+          || u.getUserInfo() != null
+          || (u.getPort() != -1 && u.getPort() != 443)) throw new IllegalArgumentException();
+    } catch (IllegalArgumentException e) {
+      throw new ApiException(
+          400, "Use an HTTPS image URL from images.pexels.com or images.unsplash.com.");
+    }
   }
 
   private void coordinate(String value, int limit) {

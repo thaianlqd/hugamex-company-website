@@ -1,21 +1,39 @@
-import { NavLink, Navigate, Outlet } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import {
+  Menu,
+  X,
+  ArrowUpRight,
+  LayoutDashboard,
+  FileText,
+  Folder,
+  Image,
+  Building2,
+  Package,
+  Handshake,
+  BadgeCheck,
+  Mail,
+  Users,
+  ShieldCheck,
+  History,
+} from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Seo, State } from '../../components/common/Shared';
 import MfaGate from '../auth/MfaGate';
+import LogoutButton from '../../components/common/LogoutButton';
 import { useTranslation } from 'react-i18next';
 import { portalUrl } from '../../app/portals';
 export const resources: Record<string, string> = {
   posts: 'Bài viết',
-  categories: 'Danh mục',
+  categories: 'Danh mục bài viết',
+  'product-categories': 'Danh mục sản phẩm',
   media: 'Thư viện media',
   pages: 'Trang nội dung',
-  branches: 'Nhà máy / văn phòng',
+  branches: 'Hệ thống',
   products: 'Sản phẩm',
   partners: 'Đối tác',
-  certifications: 'Chứng nhận',
-  'hero-slides': 'Hero',
+  certifications: 'Chất lượng',
+  'hero-slides': 'Ảnh mở đầu',
   homepage: 'Trang chủ',
   'contact-messages': 'Liên hệ',
   users: 'Người dùng',
@@ -23,12 +41,58 @@ export const resources: Record<string, string> = {
   'audit-logs': 'Nhật ký',
   settings: 'Cài đặt',
 };
+const english: Record<string, string> = {
+  posts: 'Articles',
+  categories: 'Article categories',
+  'product-categories': 'Product categories',
+  media: 'Media library',
+  pages: 'Pages',
+  branches: 'Network',
+  products: 'Products',
+  partners: 'Partners',
+  certifications: 'Quality',
+  'hero-slides': 'Hero slides',
+  homepage: 'Homepage',
+  'contact-messages': 'Contact messages',
+  users: 'Users',
+  roles: 'Permissions',
+  'audit-logs': 'Audit log',
+  settings: 'Settings',
+};
+const groups = [
+  ['Nội dung', 'Content', ['posts', 'categories', 'pages', 'media']],
+  [
+    'Doanh nghiệp',
+    'Company',
+    ['products', 'product-categories', 'branches', 'partners', 'certifications'],
+  ],
+  ['Giao tiếp', 'Communication', ['contact-messages']],
+  ['Quyền truy cập', 'Access', ['users', 'roles']],
+  ['Hệ thống', 'System', ['audit-logs']],
+] as const;
+const icons = {
+  posts: FileText,
+  categories: Folder,
+  'product-categories': Folder,
+  media: Image,
+  pages: FileText,
+  products: Package,
+  branches: Building2,
+  partners: Handshake,
+  certifications: BadgeCheck,
+  'contact-messages': Mail,
+  users: Users,
+  roles: ShieldCheck,
+  'audit-logs': History,
+};
 export default function AdminLayout() {
   const auth = useAuth();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const { t, i18n } = useTranslation();
+  const vi = i18n.language === 'vi';
   useEffect(() => {
     if (open) dialog.current?.showModal();
     else dialog.current?.close();
@@ -40,16 +104,57 @@ export default function AdminLayout() {
   const editorial = auth.user.roles.includes('EDITOR');
   if (!privileged && !editorial) return <Navigate to="/tai-khoan" replace />;
   if ((privileged || auth.user.mfaEnabled) && (!auth.user.mfaEnabled || !auth.user.mfaVerified))
-    return <MfaGate />;
-  const allowed = Object.entries(resources).filter(
-    ([key]) =>
-      superAdmin ||
-      (privileged && !['roles', 'audit-logs', 'settings'].includes(key)) ||
-      (editorial && ['posts', 'categories', 'media', 'pages'].includes(key)),
+    return (
+      <div className="admin-auth-root admin-security">
+        <Seo title="MFA" path="/admin" noIndex />
+        <main id="main">
+          <MfaGate />
+        </main>
+      </div>
+    );
+  const allowed = (key: string) =>
+    superAdmin ||
+    (privileged && !['roles', 'audit-logs', 'settings'].includes(key)) ||
+    (editorial && ['posts', 'categories', 'media', 'pages'].includes(key));
+  const current = location.pathname.split('/')[2];
+  const title = current
+    ? vi
+      ? resources[current] || 'Tài khoản'
+      : english[current] || 'Account'
+    : vi
+      ? 'Tổng quan'
+      : 'Overview';
+  const navigation = (
+    <>
+      <NavLink to="/admin" end onClick={() => setOpen(false)}>
+        <LayoutDashboard size={18} />
+        {vi ? 'Tổng quan' : 'Overview'}
+      </NavLink>
+      {groups.map(
+        ([label, en, keys]) =>
+          keys.some(allowed) && (
+            <div className="admin-nav-group" key={en}>
+              <span>{vi ? label : en}</span>
+              {keys.filter(allowed).map((key) => {
+                const Icon = icons[key];
+                return (
+                  <NavLink key={key} to={`/admin/${key}`} onClick={() => setOpen(false)}>
+                    <Icon size={18} />
+                    {vi ? resources[key] : english[key]}
+                  </NavLink>
+                );
+              })}
+            </div>
+          ),
+      )}
+    </>
   );
   return (
     <div className="admin-shell">
       <Seo title="CMS" path="/admin" />
+      <a className="skip" href="#admin-main">
+        {vi ? 'Đến nội dung' : 'Skip to content'}
+      </a>
       <dialog
         id="admin-drawer"
         className="admin-drawer"
@@ -66,62 +171,60 @@ export default function AdminLayout() {
             <X />
           </button>
         </div>
-        <nav aria-label="Admin mobile">
-          <NavLink to="/admin" end onClick={() => setOpen(false)}>
-            {i18n.language === 'vi' ? 'Tổng quan' : 'Overview'}
-          </NavLink>
-          {allowed.map(([key, label]) => (
-            <NavLink key={key} to={`/admin/${key}`} onClick={() => setOpen(false)}>
-              {i18n.language === 'vi' ? label : key.replaceAll('-', ' ')}
-            </NavLink>
-          ))}
-          <a href={portalUrl('public') || '/'}>
-            {i18n.language === 'vi' ? 'Trang khách hàng' : 'Public website'}
-          </a>
-        </nav>
+        <nav aria-label={vi ? 'Quản trị' : 'Administration'}>{navigation}</nav>
       </dialog>
-      <aside className="admin-sidebar">
+      <aside
+        className="admin-sidebar"
+        aria-label={vi ? 'Điều hướng quản trị' : 'Administration navigation'}
+      >
         <div className="admin-logo">
           <NavLink className="wordmark" to="/admin">
             HUGAMEX<span>CONTENT MANAGEMENT</span>
           </NavLink>
-          <button className="mobile-only" aria-label={t('close')} onClick={() => setOpen(false)}>
-            <X />
-          </button>
         </div>
-        <nav aria-label="Admin">
-          <NavLink to="/admin" end onClick={() => setOpen(false)}>
-            {i18n.language === 'vi' ? 'Tổng quan' : 'Overview'}
-          </NavLink>
-          {allowed.map(([key, label]) => (
-            <NavLink key={key} to={`/admin/${key}`} onClick={() => setOpen(false)}>
-              {i18n.language === 'vi' ? label : key.replaceAll('-', ' ')}
-            </NavLink>
-          ))}
-        </nav>
+        <nav aria-label={vi ? 'Quản trị' : 'Administration'}>{navigation}</nav>
         <a href={portalUrl('public') || '/'} className="admin-public">
-          {t('home')}
+          {vi ? 'Trang khách hàng' : 'Public website'}
           <ArrowUpRight size={16} />
         </a>
       </aside>
       <div className="admin-main">
         <header className="admin-topbar">
-          <button
-            ref={trigger}
-            className="mobile-only"
-            aria-controls="admin-drawer"
-            aria-expanded={open}
-            aria-label={t('menu')}
-            onClick={() => setOpen(true)}
-          >
-            <Menu />
-          </button>
-          <span>CMS / {auth.user.name}</span>
           <div>
-            <button onClick={() => void i18n.changeLanguage(i18n.language === 'vi' ? 'en' : 'vi')}>
-              VI / EN
+            <button
+              ref={trigger}
+              className="mobile-only"
+              aria-controls="admin-drawer"
+              aria-expanded={open}
+              aria-label={t('menu')}
+              onClick={() => setOpen(true)}
+            >
+              <Menu />
             </button>
-            <NavLink to="/tai-khoan">{t('account')}</NavLink>
+            <span className="admin-breadcrumb">
+              CMS <span>/</span> {title}
+            </span>
+          </div>
+          <div>
+            <button onClick={() => void i18n.changeLanguage(vi ? 'en' : 'vi')}>
+              {vi ? 'VI' : 'EN'}
+            </button>
+            <a
+              className="admin-top-public"
+              href={portalUrl('public') || '/'}
+              aria-label={vi ? 'Trang khách hàng' : 'Public website'}
+            >
+              <ArrowUpRight size={18} />
+            </a>
+            <NavLink
+              className="admin-avatar"
+              to="/tai-khoan"
+              aria-label={`${t('account')}: ${auth.user.name}`}
+              title={auth.user.name}
+            >
+              {auth.user.name.slice(0, 1).toUpperCase()}
+            </NavLink>
+            <LogoutButton />
           </div>
         </header>
         <main id="admin-main">

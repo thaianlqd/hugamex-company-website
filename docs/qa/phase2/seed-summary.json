@@ -1,0 +1,26 @@
+{
+  "checkedAt" : "2026-10-05T12:51:54.155790Z",
+  "mode" : "explicit-dev-service-job",
+  "contentWrites" : 36,
+  "idempotentSecondPass" : true,
+  "publishedCounts" : {
+    "pagesVi" : 7,
+    "pagesEn" : 7,
+    "postsVi" : 6,
+    "postsEn" : 6,
+    "productsVi" : 7,
+    "productsEn" : 7,
+    "hero-slidesVi" : 3,
+    "hero-slidesEn" : 3,
+    "categoriesVi" : 3,
+    "categoriesEn" : 3,
+    "product-categoriesVi" : 5,
+    "product-categoriesEn" : 5,
+    "branchesVi" : 4,
+    "branchesEn" : 4,
+    "partnersVi" : 1,
+    "partnersEn" : 1,
+    "certificationsVi" : 1,
+    "certificationsEn" : 1
+  }
+}

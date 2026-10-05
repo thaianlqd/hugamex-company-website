@@ -8,26 +8,19 @@ const Home = lazy(() => import('../../pages/Home'));
 const PublicContent = lazy(() => import('../../pages/PublicContent'));
 const AuthPage = lazy(() => import('../../features/auth/AuthPage'));
 const AccountPage = lazy(() => import('../../features/account/AccountPage'));
+const AccountLayout = lazy(() => import('../../features/account/AccountLayout'));
+const AccountPortalLayout = lazy(() =>
+  import('../../features/account/AccountLayout').then((m) => ({ default: m.AccountPortalLayout })),
+);
+const ChangePasswordPage = lazy(() => import('../../features/account/ChangePasswordPage'));
+const AccountSecurityPage = lazy(() => import('../../features/account/AccountSecurityPage'));
 const ContactPage = lazy(() => import('../../features/contact/ContactPage'));
 const AdminLayout = lazy(() => import('../../features/admin/AdminLayout'));
-const AdminContentList = lazy(() =>
-  import('../../features/admin/AdminContent').then((m) => ({ default: m.AdminContentList })),
-);
-const AdminContentEditor = lazy(() =>
-  import('../../features/admin/AdminContent').then((m) => ({ default: m.AdminContentEditor })),
-);
-const Dashboard = lazy(() =>
-  import('../../features/admin/AdminManagement').then((m) => ({ default: m.Dashboard })),
-);
-const MediaLibrary = lazy(() =>
-  import('../../features/admin/AdminManagement').then((m) => ({ default: m.MediaLibrary })),
-);
-const HomepageSettings = lazy(() => import('../../features/admin/AdminHomepage'));
+const AdminContentWorkspace = lazy(() => import('../../features/admin/AdminContentWorkspace'));
+const Dashboard = lazy(() => import('../../features/admin/Dashboard'));
+const MediaLibrary = lazy(() => import('../../features/admin/MediaLibrary'));
 const Records = lazy(() =>
   import('../../features/admin/AdminManagement').then((m) => ({ default: m.Records })),
-);
-const Settings = lazy(() =>
-  import('../../features/admin/AdminManagement').then((m) => ({ default: m.Settings })),
 );
 const Roles = lazy(() =>
   import('../../features/admin/AdminManagement').then((m) => ({ default: m.Roles })),
@@ -96,22 +89,26 @@ export default function AppRoutes({ surface = appSurface }: { surface?: Surface 
           ].map((p) => (
             <Route key={p} path={p} element={<AuthPage />} />
           ))}
-          <Route path="tai-khoan" element={<AccountPage />} />
           <Route path="*" element={<NotFound />} />
+        </Route>
+        <Route element={admin ? <AccountPortalLayout /> : <PublicLayout />}>
+          <Route path="tai-khoan" element={<AccountLayout />}>
+            <Route index element={<AccountPage />} />
+            <Route path="doi-mat-khau" element={<ChangePasswordPage />} />
+            <Route path="bao-mat" element={<AccountSecurityPage />} />
+          </Route>
         </Route>
         {!admin && <Route path="admin/*" element={<PortalRedirect surface="admin" />} />}
         {admin && (
           <Route path="admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="media" element={<MediaLibrary />} />
-            <Route path="homepage" element={<HomepageSettings />} />
             <Route path="contact-messages" element={<Records resource="contact-messages" />} />
             <Route path="users" element={<Records resource="users" />} />
             <Route path="audit-logs" element={<Records resource="audit-logs" />} />
-            <Route path="settings" element={<Settings />} />
             <Route path="roles" element={<Roles />} />
-            <Route path=":resource" element={<AdminContentList />} />
-            <Route path=":resource/:id" element={<AdminContentEditor />} />
+            <Route path=":resource" element={<AdminContentWorkspace />} />
+            <Route path=":resource/:id" element={<AdminContentWorkspace />} />
           </Route>
         )}
       </Routes>

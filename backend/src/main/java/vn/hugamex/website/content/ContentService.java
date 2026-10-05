@@ -15,7 +15,7 @@ public class ContentService {
   private final ContentValidation validation;
   private final AuditService audit;
   private static final String SELECT =
-      "SELECT c.*,t.locale,t.title,t.slug,coalesce((SELECT ts.slug FROM content_translations ts WHERE ts.content_id=c.id AND ts.locale='vi'),t.slug) AS canonical_slug,t.excerpt,t.content,t.seo_title,t.seo_description,m.alt_text AS featured_media_alt,ARRAY(SELECT pc.category_id FROM post_categories pc WHERE pc.post_id=c.id ORDER BY pc.category_id) AS category_ids FROM content_items c JOIN content_translations t ON t.content_id=c.id LEFT JOIN media_files m ON m.id=c.featured_media_id ";
+      "SELECT c.*,t.locale,t.title,t.slug,coalesce((SELECT ts.slug FROM content_translations ts WHERE ts.content_id=c.id AND ts.locale='vi'),t.slug) AS canonical_slug,t.excerpt,t.content,t.seo_title,t.seo_description,m.alt_text AS featured_media_alt,ARRAY(SELECT pc.category_id FROM post_categories pc WHERE pc.post_id=c.id UNION SELECT pc.category_id FROM product_categories pc WHERE pc.product_id=c.id ORDER BY 1) AS category_ids FROM content_items c JOIN content_translations t ON t.content_id=c.id LEFT JOIN media_files m ON m.id=c.featured_media_id ";
 
   private static final String SELECT_LIST =
       SELECT.replace("t.content,", "'{\"type\":\"doc\",\"content\":[]}'::jsonb AS content,");
@@ -37,6 +37,7 @@ public class ContentService {
       case "partners" -> "PARTNER";
       case "certifications" -> "CERTIFICATION";
       case "categories" -> "CATEGORY";
+      case "product-categories" -> "PRODUCT_CATEGORY";
       case "hero-slides" -> "HERO";
       default -> throw new ApiException(404, "Resource not found.");
     };
@@ -90,8 +91,12 @@ public class ContentService {
       args.add(status);
     }
     if (category != null) {
+      if (!Set.of("POST", "PRODUCT").contains(kind))
+        throw new ApiException(400, "Unsupported category filter.");
       where +=
-          " AND EXISTS(SELECT 1 FROM post_categories pc WHERE pc.post_id=c.id AND pc.category_id=?) ";
+          kind.equals("PRODUCT")
+              ? " AND EXISTS(SELECT 1 FROM product_categories pc WHERE pc.product_id=c.id AND pc.category_id=?) "
+              : " AND EXISTS(SELECT 1 FROM post_categories pc WHERE pc.post_id=c.id AND pc.category_id=?) ";
       args.add(category);
     }
     long total =
@@ -220,17 +225,31 @@ public class ContentService {
         json.write(r.content()),
         r.seoTitle(),
         r.seoDescription());
-    db.update("DELETE FROM post_categories WHERE post_id=?", id);
+    String relation = kind.equals("PRODUCT") ? "product_categories" : "post_categories";
+    String foreignKey = kind.equals("PRODUCT") ? "product_id" : "post_id";
+    db.update("DELETE FROM " + relation + " WHERE " + foreignKey + "=?", id);
     for (UUID category : new HashSet<>(r.categoryIds())) {
-      if (db.queryForObject(
-              "SELECT count(*) FROM content_items WHERE id=? AND kind='CATEGORY' AND status<>'ARCHIVED'",
-              Long.class,
-              category)
-          != 1) throw new ApiException(400, "Invalid category.");
-      db.update("INSERT INTO post_categories VALUES (?,?)", id, category);
+      if (db.queryForList(
+              "SELECT id FROM content_items WHERE id=? AND kind=? AND status<>'ARCHIVED' FOR SHARE",
+              UUID.class,
+              category,
+              kind.equals("PRODUCT") ? "PRODUCT_CATEGORY" : "CATEGORY")
+          .isEmpty()) throw new ApiException(400, "Invalid category.");
+      db.update("INSERT INTO " + relation + " VALUES (?,?)", id, category);
     }
+    if (kind.equals("PRODUCT") && "PUBLISHED".equals(rows.getFirst().get("status")))
+      requireProductCategory(id);
     audit.record(actor.id(), created ? "CONTENT_CREATED" : "CONTENT_UPDATED", kind, id);
     return get(kind, id, r.locale());
+  }
+
+  private void requireProductCategory(UUID id) {
+    if (db.queryForList(
+            "SELECT c.id FROM product_categories pc JOIN content_items c ON c.id=pc.category_id WHERE pc.product_id=? AND c.status='PUBLISHED' FOR SHARE OF c",
+            UUID.class,
+            id)
+        .isEmpty())
+      throw new ApiException(400, "Select a published product category before publishing.");
   }
 
   @Transactional
@@ -239,6 +258,7 @@ public class ContentService {
         db.queryForList("SELECT * FROM content_items WHERE id=? AND kind=? FOR UPDATE", id, kind);
     if (rows.isEmpty()) throw new ApiException(404, "Content not found.");
     if (status.equals("PUBLISHED")) {
+      if (kind.equals("PRODUCT")) requireProductCategory(id);
       media((UUID) rows.getFirst().get("featured_media_id"), true, true);
       var m = json.strings(rows.getFirst().get("metadata").toString());
       if (m.containsKey("documentMediaId") && !m.get("documentMediaId").isBlank())
@@ -247,6 +267,15 @@ public class ContentService {
               "SELECT count(*) FROM content_translations WHERE content_id=?", Long.class, id)
           == 0) throw new ApiException(400, "Add a translation before publishing.");
     }
+    if (kind.equals("PRODUCT_CATEGORY")
+        && !status.equals("PUBLISHED")
+        && db.queryForObject(
+                "SELECT count(*) FROM product_categories pc JOIN content_items p ON p.id=pc.product_id WHERE pc.category_id=? AND p.status='PUBLISHED'",
+                Long.class,
+                id)
+            > 0)
+      throw new ApiException(
+          400, "Move or unpublish linked products before hiding their category.");
     db.update(
         "UPDATE content_items SET status=?,published_at=CASE WHEN ?='PUBLISHED' THEN coalesce(published_at,now()) ELSE published_at END,updated_at=now(),updated_by=? WHERE id=?",
         status,

@@ -1,0 +1,150 @@
+{
+  "checkedAt": "2026-10-05T13:10:57.064Z",
+  "public": [],
+  "admin": [
+    {
+      "label": "admin-login-390",
+      "overflow": false
+    },
+    {
+      "label": "admin-login-1440",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-375",
+      "overflow": false
+    },
+    {
+      "label": "list-375",
+      "overflow": false
+    },
+    {
+      "label": "editor-375",
+      "overflow": false
+    },
+    {
+      "label": "media-375",
+      "overflow": false
+    },
+    {
+      "label": "users-375",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-390",
+      "overflow": false
+    },
+    {
+      "label": "list-390",
+      "overflow": false
+    },
+    {
+      "label": "editor-390",
+      "overflow": false
+    },
+    {
+      "label": "media-390",
+      "overflow": false
+    },
+    {
+      "label": "users-390",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-430",
+      "overflow": false
+    },
+    {
+      "label": "list-430",
+      "overflow": false
+    },
+    {
+      "label": "editor-430",
+      "overflow": false
+    },
+    {
+      "label": "media-430",
+      "overflow": false
+    },
+    {
+      "label": "users-430",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-768",
+      "overflow": false
+    },
+    {
+      "label": "list-768",
+      "overflow": false
+    },
+    {
+      "label": "editor-768",
+      "overflow": false
+    },
+    {
+      "label": "media-768",
+      "overflow": false
+    },
+    {
+      "label": "users-768",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-1024",
+      "overflow": false
+    },
+    {
+      "label": "list-1024",
+      "overflow": false
+    },
+    {
+      "label": "editor-1024",
+      "overflow": false
+    },
+    {
+      "label": "media-1024",
+      "overflow": false
+    },
+    {
+      "label": "users-1024",
+      "overflow": false
+    },
+    {
+      "label": "dashboard-1440",
+      "overflow": false
+    },
+    {
+      "label": "list-1440",
+      "overflow": false
+    },
+    {
+      "label": "editor-1440",
+      "overflow": false
+    },
+    {
+      "label": "media-1440",
+      "overflow": false
+    },
+    {
+      "label": "users-1440",
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "admin-login-desktop",
+      "violations": []
+    },
+    {
+      "name": "admin-editor-desktop",
+      "violations": []
+    },
+    {
+      "name": "admin-media-desktop",
+      "violations": []
+    }
+  ],
+  "consoleErrors": [],
+  "mutationsBlocked": 0
+}

@@ -16,16 +16,22 @@ import vn.hugamex.website.security.*;
 @RequestMapping("/api/v1")
 public class SiteController {
   private final JdbcTemplate db;
+  private final HomepageService homepageService;
+  private final SiteSettingsService siteSettings;
   private final Policy policy;
   private final AuditService audit;
   private final vn.hugamex.website.content.ContentService content;
 
   public SiteController(
       JdbcTemplate db,
+      HomepageService homepageService,
+      SiteSettingsService siteSettings,
       Policy policy,
       AuditService audit,
       vn.hugamex.website.content.ContentService content) {
     this.db = db;
+    this.homepageService = homepageService;
+    this.siteSettings = siteSettings;
     this.policy = policy;
     this.audit = audit;
     this.content = content;
@@ -43,29 +49,11 @@ public class SiteController {
       @NotNull @Size(max = 12) List<UUID> contentIds) {}
 
   private List<Section> sections() {
-    return db.query(
-        "SELECT * FROM homepage_sections ORDER BY position,id",
-        (rs, n) ->
-            new Section(
-                rs.getObject("id", UUID.class),
-                rs.getString("section_key"),
-                rs.getBoolean("enabled"),
-                rs.getInt("position"),
-                rs.getString("headline_vi"),
-                rs.getString("headline_en"),
-                rs.getString("subheadline_vi"),
-                rs.getString("subheadline_en"),
-                Arrays.asList((UUID[]) rs.getArray("content_ids").getArray())));
+    return homepageService.sections();
   }
 
   private Map<String, String> settings() {
-    Map<String, String> m = new LinkedHashMap<>();
-    db.query(
-        "SELECT key,value FROM site_settings ORDER BY key",
-        rs -> {
-          m.put(rs.getString(1), rs.getString(2));
-        });
-    return m;
+    return siteSettings.read();
   }
 
   @GetMapping("/public/site")
@@ -79,92 +67,41 @@ public class SiteController {
 
   @GetMapping("/admin/homepage")
   @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
-  @PreAuthorize("@policy.business(authentication)")
+  @PreAuthorize("denyAll()")
   List<Section> homepage() {
     return sections();
   }
 
+  @PutMapping("/admin/homepage/order")
+  @PreAuthorize("denyAll()")
+  Map<String, String> reorder(Authentication a, @RequestBody List<UUID> ids) {
+    homepageService.reorder(ids, policy.actor(a).id());
+    return Map.of("message", "Order updated.");
+  }
+
   @PutMapping("/admin/homepage/{id}")
   @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
-  @PreAuthorize("@policy.business(authentication)")
+  @PreAuthorize("denyAll()")
   @Transactional
   Map<String, String> update(
       Authentication a, @PathVariable UUID id, @Valid @RequestBody Section s) {
-    var keys =
-        db.queryForList("SELECT section_key FROM homepage_sections WHERE id=?", String.class, id);
-    if (keys.isEmpty()) throw new ApiException(404, "Section not found.");
-    String key = keys.getFirst();
-    if (!key.equals(s.key()) || !id.equals(s.id()))
-      throw new ApiException(400, "Section identity cannot change.");
-    String kind =
-        switch (key) {
-          case "about", "manufacturing" -> "PAGE";
-          case "products" -> "PRODUCT";
-          case "branches" -> "BRANCH";
-          case "quality" -> "CERTIFICATION";
-          case "partners" -> "PARTNER";
-          case "news" -> "POST";
-          default -> throw new ApiException(400, "Invalid section.");
-        };
-    for (UUID content : s.contentIds())
-      if (db.queryForObject(
-              "SELECT count(*) FROM content_items WHERE id=? AND kind=? AND status='PUBLISHED'",
-              Long.class,
-              content,
-              kind)
-          != 1) throw new ApiException(400, "Select published content references.");
-    db.update(
-        "UPDATE homepage_sections SET enabled=?,position=?,headline_vi=?,headline_en=?,subheadline_vi=?,subheadline_en=?,content_ids=? WHERE id=?",
-        s.enabled(),
-        s.position(),
-        s.headlineVi(),
-        s.headlineEn(),
-        s.subheadlineVi(),
-        s.subheadlineEn(),
-        s.contentIds().toArray(UUID[]::new),
-        id);
-    audit.record(policy.actor(a).id(), "HOMEPAGE_UPDATED", "SECTION", id);
+    homepageService.update(id, s, policy.actor(a).id());
     return Map.of("message", "Section updated.");
   }
 
   @GetMapping("/admin/settings")
   @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
-  @PreAuthorize("@policy.superAdmin(authentication)")
+  @PreAuthorize("denyAll()")
   Map<String, String> adminSettings() {
     return settings();
   }
 
   @PutMapping("/admin/settings")
   @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
-  @PreAuthorize("@policy.superAdmin(authentication) and @policy.recent(authentication)")
+  @PreAuthorize("denyAll()")
   @Transactional
   Map<String, String> settings(Authentication a, @RequestBody Map<String, String> values) {
-    Set<String> allowed =
-        Set.of(
-            "companyName",
-            "contactEmail",
-            "contactPhone",
-            "contactAddress",
-            "officeHours",
-            "facebookUrl",
-            "linkedinUrl");
-    if (values.size() > allowed.size() || !allowed.containsAll(values.keySet()))
-      throw new ApiException(400, "Unsupported setting.");
-    values.forEach(
-        (k, v) -> {
-          if (v == null || v.length() > 2000) throw new ApiException(400, "Invalid setting.");
-          if (k.endsWith("Url") && !v.isBlank()) {
-            var u = java.net.URI.create(v);
-            if (!"https".equals(u.getScheme()) || u.getHost() == null)
-              throw new ApiException(400, "Use HTTPS social URLs.");
-          }
-          db.update(
-              "INSERT INTO site_settings(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-              k,
-              v);
-        });
-    audit.record(policy.actor(a).id(), "SETTINGS_UPDATED", "SITE", null);
-    return settings();
+    return siteSettings.update(values, policy.actor(a).id());
   }
 
   @GetMapping("/admin/dashboard")

@@ -39,6 +39,8 @@ app:
   secure-cookies: true
   mail-from: ${MAIL_FROM:}
   mail-mode: ${MAIL_MODE:file}
+  contact-notifications-enabled: ${CONTACT_NOTIFICATIONS_ENABLED:false}
+  contact-notification-email: ${CONTACT_NOTIFICATION_EMAIL:}
 springdoc:
   api-docs:
     enabled: false

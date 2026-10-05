@@ -53,6 +53,8 @@ class PostgresIntegrationTest {
       r.add(p, () -> value);
     }
     r.add("debug", () -> false);
+    r.add("app.contact-notifications-enabled", () -> true);
+    r.add("app.contact-notification-email", () -> "qa-contact@example.invalid");
     r.add("app.origins", () -> "http://127.0.0.1:5173");
     r.add("app.frontend-url", () -> "http://127.0.0.1:5173");
   }
@@ -202,7 +204,7 @@ class PostgresIntegrationTest {
   @Test
   void migrationsValidateAndMediaIsBytea() {
     assertEquals(
-        4L,
+        5L,
         db.queryForObject(
             "SELECT count(*) FROM flyway_schema_history WHERE success=true", Long.class));
     assertEquals(
@@ -211,6 +213,10 @@ class PostgresIntegrationTest {
             "SELECT data_type FROM information_schema.columns WHERE table_name='media_files' AND column_name='data'",
             String.class));
     assertEquals(4L, db.queryForObject("SELECT count(*) FROM roles", Long.class));
+    assertTrue(
+        db.queryForObject(
+            "SELECT relrowsecurity FROM pg_class WHERE oid='product_categories'::regclass",
+            Boolean.class));
   }
 
   @Test
@@ -933,20 +939,343 @@ class PostgresIntegrationTest {
             uid));
   }
 
+  @Autowired vn.hugamex.website.setting.HomepageService homepage;
+  @Autowired vn.hugamex.website.contact.ContactNotificationService notifications;
+
   @Test
-  void homepageConfigurationUpdateWorks() throws Exception {
+  void presentationConfigurationIsDeveloperOwnedEvenForSuperAdmin() throws Exception {
+    var section = homepage.sections().getFirst();
+    for (String role : List.of("ADMIN", "SUPER_ADMIN")) {
+      String token = bearer(user(role), true);
+      for (String path : List.of("homepage", "settings", "hero-slides"))
+        mvc.perform(get("/api/v1/admin/" + path).header("Authorization", "Bearer " + token))
+            .andExpect(status().isForbidden());
+      mvc.perform(
+              put("/api/v1/admin/homepage/" + section.id())
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content(json.writeValueAsString(section)))
+          .andExpect(status().isForbidden());
+      mvc.perform(
+              put("/api/v1/admin/homepage/order")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content(
+                      json.writeValueAsString(
+                          homepage.sections().stream().map(x -> x.id()).toList())))
+          .andExpect(status().isForbidden());
+      mvc.perform(
+              put("/api/v1/admin/settings")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content("{\"contactAddress\":\"Changed\"}"))
+          .andExpect(status().isForbidden());
+      mvc.perform(
+              post("/api/v1/admin/hero-slides")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content(json.writeValueAsString(articleFixture("blocked-hero"))))
+          .andExpect(status().isForbidden());
+    }
+    assertEquals(
+        section,
+        homepage.sections().stream()
+            .filter(x -> x.id().equals(section.id()))
+            .findFirst()
+            .orElseThrow());
+  }
+
+  @Test
+  void developerHeroExternalImageSurvivesPublishingAndIsRestrictedToHero() throws Exception {
+    UUID uid = user("ADMIN");
+    var body = json.valueToTree(articleFixture("external-hero"));
+    ((com.fasterxml.jackson.databind.node.ObjectNode) body)
+        .set(
+            "metadata",
+            json.createObjectNode()
+                .put("externalImageUrl", "https://images.pexels.com/photos/5830692/preview.jpeg"));
+    var saved =
+        content.save(
+            "HERO",
+            null,
+            json.treeToValue(body, ContentRequests.Save.class),
+            actor(uid, "ADMIN", true));
+    content.status("HERO", saved.id(), "PUBLISHED", actor(uid, "ADMIN", true));
+    mvc.perform(get("/api/v1/public/hero-slides"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.items[0].metadata.externalImageUrl")
+                .value("https://images.pexels.com/photos/5830692/preview.jpeg"));
+    mvc.perform(
+            post("/api/v1/admin/pages")
+                .header("Authorization", "Bearer " + bearer(uid, true))
+                .contentType("application/json")
+                .content(body.toString()))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            post("/api/v1/admin/hero-slides")
+                .header("Authorization", "Bearer " + bearer(uid, false))
+                .contentType("application/json")
+                .content(body.toString()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void developerHomepageReorderRetainsAtomicValidation() {
+    UUID uid = user("SUPER_ADMIN");
+    var original = homepage.sections().stream().map(x -> x.id()).toList();
+    var reversed = new ArrayList<>(original);
+    Collections.reverse(reversed);
+    try {
+      homepage.reorder(reversed, uid);
+      assertEquals(reversed, homepage.sections().stream().map(x -> x.id()).toList());
+      var invalid = new ArrayList<>(reversed);
+      invalid.set(0, invalid.get(1));
+      assertThrows(ApiException.class, () -> homepage.reorder(invalid, uid));
+      assertEquals(reversed, homepage.sections().stream().map(x -> x.id()).toList());
+    } finally {
+      homepage.reorder(original, uid);
+    }
+  }
+
+  @Test
+  void productsUseSeparatePublishedCategoriesAndPublicFiltering() throws Exception {
     UUID uid = user("ADMIN");
     String token = bearer(uid, true);
-    String id = "00000000-0000-0000-0000-000000000001";
+    Actor a = actor(uid, "ADMIN", true);
+    var category = content.save("PRODUCT_CATEGORY", null, articleFixture("product-category"), a);
+    content.status("PRODUCT_CATEGORY", category.id(), "PUBLISHED", a);
+    var productBody =
+        (com.fasterxml.jackson.databind.node.ObjectNode)
+            json.valueToTree(articleFixture("classified-product"));
+    productBody.set("categoryIds", json.createArrayNode().add(category.id().toString()));
+    var created =
+        mvc.perform(
+                post("/api/v1/admin/products")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType("application/json")
+                    .content(productBody.toString()))
+            .andExpect(status().isOk())
+            .andReturn();
+    UUID product =
+        UUID.fromString(
+            json.readTree(created.getResponse().getContentAsString()).path("id").asText());
+    content.status("PRODUCT", product, "PUBLISHED", a);
+    mvc.perform(get("/api/v1/public/products").param("category", category.id().toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(1))
+        .andExpect(jsonPath("$.items[0].categoryIds[0]").value(category.id().toString()));
+    mvc.perform(get("/api/v1/public/product-categories"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(1));
+    assertThrows(
+        ApiException.class, () -> content.status("PRODUCT_CATEGORY", category.id(), "ARCHIVED", a));
+    var plain = content.save("PRODUCT", null, articleFixture("no-category-product"), a);
+    assertThrows(ApiException.class, () -> content.status("PRODUCT", plain.id(), "PUBLISHED", a));
+    assertThrows(
+        ApiException.class,
+        () -> content.save("PRODUCT", product, articleFixture("classified-product"), a));
+    assertEquals(List.of(category.id()), content.get("PRODUCT", product, "vi").categoryIds());
+    var newsCategory = content.save("CATEGORY", null, articleFixture("news-category"), a);
+    productBody.put("slug", "wrong-product-category");
+    productBody.set("categoryIds", json.createArrayNode().add(newsCategory.id().toString()));
     mvc.perform(
-            put("/api/v1/admin/homepage/" + id)
+            post("/api/v1/admin/products")
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
+                .content(productBody.toString()))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            post("/api/v1/admin/product-categories")
+                .header("Authorization", "Bearer " + bearer(user("EDITOR"), false))
+                .contentType("application/json")
+                .content(json.writeValueAsString(articleFixture("editor-denied-category"))))
+        .andExpect(status().isForbidden());
+    content.status("PRODUCT", product, "DRAFT", a);
+    content.status("PRODUCT_CATEGORY", category.id(), "ARCHIVED", a);
+  }
+
+  UUID queuedContact() throws Exception {
+    mvc.perform(
+            post("/api/v1/contact")
+                .with(csrf())
+                .contentType("application/json")
                 .content(
-                    "{\"id\":\""
-                        + id
-                        + "\",\"key\":\"about\",\"enabled\":true,\"position\":0,\"headlineVi\":\"Test title\",\"headlineEn\":\"Test title\",\"subheadlineVi\":\"\",\"subheadlineEn\":\"\",\"contentIds\":[]}"))
+                    "{\"fullName\":\"QA contact\",\"company\":\"Test fixture\",\"email\":\"reply@example.invalid\",\"phone\":\"\",\"subject\":\"Plain subject\",\"message\":\"<b>Plain text only</b>\",\"website\":\"\"}"))
         .andExpect(status().isOk());
+    return db.queryForObject(
+        "SELECT id FROM contact_messages WHERE email='reply@example.invalid' ORDER BY created_at DESC LIMIT 1",
+        UUID.class);
+  }
+
+  @Test
+  void contactPersistsInAdminInboxAndFileNotificationIsSentOnlyOnce() throws Exception {
+    UUID id = queuedContact();
+    assertEquals(
+        "PENDING",
+        db.queryForObject(
+            "SELECT notification_status FROM contact_messages WHERE id=?", String.class, id));
+    notifications.deliver(id);
+    notifications.deliver(id);
+    assertEquals(
+        "SENT",
+        db.queryForObject(
+            "SELECT notification_status FROM contact_messages WHERE id=?", String.class, id));
+    assertEquals(
+        1,
+        db.queryForObject(
+            "SELECT notification_attempts FROM contact_messages WHERE id=?", Integer.class, id));
+    Path file = Path.of(".dev-mail/contact-" + id + ".txt");
+    try {
+      String text = Files.readString(file);
+      assertTrue(text.contains("To: qa-contact@example.invalid"));
+      assertTrue(text.contains("Reply-To: reply@example.invalid"));
+      assertTrue(text.contains("<b>Plain text only</b>"));
+      mvc.perform(
+              get("/api/v1/admin/contact-messages")
+                  .param("search", "reply@example.invalid")
+                  .header("Authorization", "Bearer " + bearer(user("ADMIN"), true)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.items[0].notification_status").value("SENT"));
+      mvc.perform(
+              get("/api/v1/admin/contact-messages")
+                  .header("Authorization", "Bearer " + bearer(user("USER"), false)))
+          .andExpect(status().isForbidden());
+    } finally {
+      Files.deleteIfExists(file);
+    }
+  }
+
+  @Test
+  void smtpFailureRetainsMessageRetriesAndUsesFixedRecipient() throws Exception {
+    UUID id = queuedContact();
+    var sender = org.mockito.Mockito.mock(org.springframework.mail.javamail.JavaMailSender.class);
+    var beans = new org.springframework.beans.factory.support.DefaultListableBeanFactory();
+    beans.registerSingleton("sender", sender);
+    var service =
+        new vn.hugamex.website.contact.ContactNotificationService(
+            db,
+            transactionManager,
+            beans.getBeanProvider(org.springframework.mail.javamail.JavaMailSender.class),
+            true,
+            "owner@example.invalid",
+            "from@example.invalid",
+            "smtp");
+    org.mockito.Mockito.doThrow(
+            new org.springframework.mail.MailSendException("Provider details must stay private"))
+        .doNothing()
+        .when(sender)
+        .send(org.mockito.ArgumentMatchers.any(org.springframework.mail.SimpleMailMessage.class));
+    service.deliver(id);
+    assertEquals(
+        "RETRY",
+        db.queryForObject(
+            "SELECT notification_status FROM contact_messages WHERE id=?", String.class, id));
+    assertEquals(
+        1L, db.queryForObject("SELECT count(*) FROM contact_messages WHERE id=?", Long.class, id));
+    service.deliver(id);
+    org.mockito.Mockito.verify(sender, org.mockito.Mockito.times(1))
+        .send(org.mockito.ArgumentMatchers.any(org.springframework.mail.SimpleMailMessage.class));
+    db.update(
+        "UPDATE contact_messages SET notification_next_at=now()-interval '1 second' WHERE id=?",
+        id);
+    service.deliver(id);
+    assertEquals(
+        "SENT",
+        db.queryForObject(
+            "SELECT notification_status FROM contact_messages WHERE id=?", String.class, id));
+    var captured =
+        org.mockito.ArgumentCaptor.forClass(org.springframework.mail.SimpleMailMessage.class);
+    org.mockito.Mockito.verify(sender, org.mockito.Mockito.times(2)).send(captured.capture());
+    var message = captured.getValue();
+    assertArrayEquals(new String[] {"owner@example.invalid"}, message.getTo());
+    assertEquals("reply@example.invalid", message.getReplyTo());
+    assertFalse(message.getSubject().contains("Plain subject"));
+    assertTrue(message.getText().contains("<b>Plain text only</b>"));
+    org.mockito.Mockito.doThrow(
+            new org.springframework.mail.MailSendException("Private provider failure"))
+        .when(sender)
+        .send(org.mockito.ArgumentMatchers.any(org.springframework.mail.SimpleMailMessage.class));
+    db.update(
+        "UPDATE contact_messages SET notification_status='RETRY',notification_attempts=4,notification_next_at=now()-interval '1 second' WHERE id=?",
+        id);
+    service.deliver(id);
+    assertEquals(
+        "FAILED",
+        db.queryForObject(
+            "SELECT notification_status FROM contact_messages WHERE id=?", String.class, id));
+    service.deliver(id);
+    org.mockito.Mockito.verify(sender, org.mockito.Mockito.times(3))
+        .send(org.mockito.ArgumentMatchers.any(org.springframework.mail.SimpleMailMessage.class));
+  }
+
+  @Test
+  void profileUpdateIsBoundToTheAuthenticatedUserAndRejectsSecurityFields() throws Exception {
+    UUID owner = user("USER"), other = user("USER");
+    String token = bearer(owner, false);
+    mvc.perform(
+            put("/api/v1/account/profile")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("{\"name\":\"  Updated display name  \"}"))
+        .andExpect(status().isOk());
+    assertEquals(
+        "Updated display name",
+        db.queryForObject("SELECT name FROM users WHERE id=?", String.class, owner));
+    assertEquals(
+        "Test fixture",
+        db.queryForObject("SELECT name FROM users WHERE id=?", String.class, other));
+    mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + token))
+        .andExpect(jsonPath("$.name").value("Updated display name"));
+    for (String field : List.of("id", "email", "roles", "verified", "passwordHash"))
+      mvc.perform(
+              put("/api/v1/account/profile")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content(json.writeValueAsString(Map.of("name", "Altered", field, "forbidden"))))
+          .andExpect(status().isBadRequest());
+    assertEquals(
+        List.of("USER"),
+        db.queryForList("SELECT role_name FROM user_roles WHERE user_id=?", String.class, owner));
+    assertEquals(
+        1L,
+        db.queryForObject(
+            "SELECT count(*) FROM audit_logs WHERE actor_user_id=? AND action='PROFILE_UPDATED'",
+            Long.class,
+            owner));
+    mvc.perform(
+            put("/api/v1/account/profile")
+                .contentType("application/json")
+                .content("{\"name\":\"Anonymous\"}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void profileValidationDoesNotBypassPrivilegedMfa() throws Exception {
+    UUID owner = user("ADMIN");
+    String token = bearer(owner, false);
+    for (String name : List.of("   ", "a".repeat(121)))
+      mvc.perform(
+              put("/api/v1/account/profile")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType("application/json")
+                  .content(json.writeValueAsString(Map.of("name", name))))
+          .andExpect(status().isBadRequest());
+    mvc.perform(
+            put("/api/v1/account/profile")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("{\"name\":\"Personal profile\"}"))
+        .andExpect(status().isOk());
+    mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token))
+        .andExpect(status().isForbidden());
+    db.update("UPDATE users SET status='DISABLED' WHERE id=?", owner);
+    mvc.perform(
+            put("/api/v1/account/profile")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("{\"name\":\"Disabled\"}"))
+        .andExpect(status().isUnauthorized());
   }
 
   // Spring csrf() test helpers replace the filter repository; verify the wire contract in a fresh

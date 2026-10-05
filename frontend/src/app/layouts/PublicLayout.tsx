@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../services/api';
 import type { Site } from '../../types';
+import { FadeIn } from '../../components/common/Reveal';
+import FloatingContact from '../../components/public/FloatingContact';
 import { Menu, X, UserRound, ArrowUpRight } from 'lucide-react';
 const nav = [
   ['about', '/gioi-thieu'],
@@ -101,69 +103,82 @@ export default function PublicLayout() {
       <main id="main">
         <Outlet />
       </main>
-      <footer>
-        <div className="footer-top">
-          <div>
-            <Link className="wordmark" to="/">
-              HUGAMEX<span>HUU NGHI GARMENT</span>
-            </Link>
-            <p>{settings.companyName || t('company')}</p>
-            {settings.contactAddress && <p>{settings.contactAddress}</p>}
-            {settings.contactPhone && (
-              <a href={`tel:${settings.contactPhone.replace(/[^+0-9]/g, '')}`}>
-                {settings.contactPhone}
-              </a>
-            )}
-            {settings.contactEmail && (
-              <p>
-                <a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>
-              </p>
-            )}
-            {settings.officeHours && <p>{settings.officeHours}</p>}
-            <p className="muted">{t('placeholder')}</p>
-          </div>
-          <div className="footer-links">
-            {nav.map(([key, to]) => (
-              <Link key={key} to={to}>
-                {t(key)}
+      <FadeIn>
+        <footer>
+          <div className="footer-top">
+            <div>
+              <Link className="wordmark" to="/">
+                HUGAMEX<span>HUU NGHI GARMENT</span>
               </Link>
-            ))}
-          </div>
-          <div className="footer-links">
-            {[
-              ['sustainability', '/phat-trien-ben-vung'],
-              ['certifications', '/chung-nhan'],
-              ['partners', '/doi-tac'],
-              ['careers', '/tuyen-dung'],
-            ].map(([key, to]) => (
-              <Link key={key} to={to}>
-                {t(key)}
-              </Link>
-            ))}
-            {[
-              ['Facebook', settings.facebookUrl],
-              ['LinkedIn', settings.linkedinUrl],
-            ]
-              .filter(([, url]) => !!url)
-              .map(([label, url]) => (
-                <a key={label} href={url} target="_blank" rel="noopener noreferrer">
-                  {label}
+              <p>{settings.companyName || t('company')}</p>
+              {settings.contactAddress && (
+                <p>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.contactAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {settings.contactAddress}
+                  </a>
+                </p>
+              )}
+              {settings.contactPhone && (
+                <a href={`tel:${settings.contactPhone.replace(/[^+0-9]/g, '')}`}>
+                  {settings.contactPhone}
                 </a>
+              )}
+              {settings.contactEmail && (
+                <p>
+                  <a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>
+                </p>
+              )}
+              {settings.officeHours && <p>{settings.officeHours}</p>}
+              <span className="preview-badge">
+                {i18n.language === 'vi' ? 'Bản xem trước' : 'Preview edition'}
+              </span>
+            </div>
+            <div className="footer-links">
+              {nav.map(([key, to]) => (
+                <Link key={key} to={to}>
+                  {t(key)}
+                </Link>
               ))}
-            <Link to="/lien-he">
-              {i18n.language === 'vi'
-                ? 'Thông tin liên hệ chờ xác nhận'
-                : 'Contact details pending confirmation'}
-              <ArrowUpRight size={16} />
-            </Link>
+            </div>
+            <div className="footer-links">
+              {[
+                ['sustainability', '/phat-trien-ben-vung'],
+                ['certifications', '/chung-nhan'],
+                ['partners', '/doi-tac'],
+                ['careers', '/tuyen-dung'],
+              ].map(([key, to]) => (
+                <Link key={key} to={to}>
+                  {t(key)}
+                </Link>
+              ))}
+              {[
+                ['Facebook', settings.facebookUrl],
+                ['LinkedIn', settings.linkedinUrl],
+              ]
+                .filter(([, url]) => !!url)
+                .map(([label, url]) => (
+                  <a key={label} href={url} target="_blank" rel="noopener noreferrer">
+                    {label}
+                  </a>
+                ))}
+              <Link to="/lien-he">
+                {i18n.language === 'vi' ? 'Trao đổi với HUGAMEX' : 'Talk to HUGAMEX'}
+                <ArrowUpRight size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} HUGAMEX</span>
-          <span>VIETNAM · GARMENT MANUFACTURING</span>
-          <Link to="/chinh-sach-bao-mat">{t('privacy')}</Link>
-        </div>
-      </footer>
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} HUGAMEX</span>
+            <span>VIETNAM · GARMENT MANUFACTURING</span>
+            <Link to="/chinh-sach-bao-mat">{t('privacy')}</Link>
+          </div>
+        </footer>
+      </FadeIn>
+      <FloatingContact settings={settings} />
     </>
   );
 }

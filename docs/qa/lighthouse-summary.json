@@ -8,10 +8,10 @@
       "seo": 92
     },
     "metrics": {
-      "first-contentful-paint": "2.3 s",
-      "largest-contentful-paint": "4.7 s",
-      "total-blocking-time": "20 ms",
-      "cumulative-layout-shift": "0.035"
+      "first-contentful-paint": "3.3 s",
+      "largest-contentful-paint": "3.7 s",
+      "total-blocking-time": "0 ms",
+      "cumulative-layout-shift": "0.066"
     },
     "runtimeError": null,
     "warnings": [],
@@ -33,12 +33,12 @@
         "title": "Speed Index"
       },
       {
-        "id": "interactive",
-        "title": "Time to Interactive"
+        "id": "cumulative-layout-shift",
+        "title": "Cumulative Layout Shift"
       },
       {
-        "id": "prioritize-lcp-image",
-        "title": "Preload Largest Contentful Paint image"
+        "id": "interactive",
+        "title": "Time to Interactive"
       },
       {
         "id": "uses-long-cache-ttl",
@@ -69,20 +69,28 @@
   {
     "viewport": "desktop",
     "scores": {
-      "performance": 100,
+      "performance": 91,
       "accessibility": 100,
       "best-practices": 100,
       "seo": 91
     },
     "metrics": {
-      "first-contentful-paint": "0.1 s",
-      "largest-contentful-paint": "0.5 s",
+      "first-contentful-paint": "0.4 s",
+      "largest-contentful-paint": "1.2 s",
       "total-blocking-time": "0 ms",
       "cumulative-layout-shift": "0.012"
     },
     "runtimeError": null,
     "warnings": [],
     "failedAudits": [
+      {
+        "id": "largest-contentful-paint",
+        "title": "Largest Contentful Paint"
+      },
+      {
+        "id": "speed-index",
+        "title": "Speed Index"
+      },
       {
         "id": "mainthread-work-breakdown",
         "title": "Minimizes main-thread work"
@@ -98,6 +106,14 @@
       {
         "id": "render-blocking-resources",
         "title": "Eliminate render-blocking resources"
+      },
+      {
+        "id": "modern-image-formats",
+        "title": "Serve images in next-gen formats"
+      },
+      {
+        "id": "uses-responsive-images",
+        "title": "Properly size images"
       },
       {
         "id": "is-crawlable",

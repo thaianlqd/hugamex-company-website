@@ -27,7 +27,7 @@ public class AdminContentController {
   }
 
   @GetMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}")
   PageResult<ContentDto> list(
       Authentication a,
       @PathVariable String resource,
@@ -40,7 +40,7 @@ public class AdminContentController {
   }
 
   @GetMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}/{id}")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}/{id}")
   ContentDto get(
       Authentication a,
       @PathVariable String resource,
@@ -50,14 +50,14 @@ public class AdminContentController {
   }
 
   @PostMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}")
   ContentDto create(
       Authentication a, @PathVariable String resource, @Valid @RequestBody ContentRequests.Save r) {
     return service.save(allow(a, resource), null, r, policy.actor(a));
   }
 
   @PutMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}/{id}")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}/{id}")
   ContentDto save(
       Authentication a,
       @PathVariable String resource,
@@ -67,7 +67,7 @@ public class AdminContentController {
   }
 
   @PatchMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}/{id}/status")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}/{id}/status")
   Map<String, String> status(
       Authentication a,
       @PathVariable String resource,

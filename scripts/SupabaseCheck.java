@@ -6,7 +6,7 @@ class SupabaseCheck {
   private static final List<String> TABLES = List.of(
       "users", "roles", "user_roles", "auth_identities", "refresh_sessions",
       "email_otp_challenges", "mfa_totp", "mfa_recovery_codes", "media_files",
-      "content_items", "content_translations", "post_categories", "homepage_sections",
+      "content_items", "content_translations", "post_categories", "product_categories", "homepage_sections",
       "contact_messages", "site_settings", "audit_logs", "rate_limit_buckets");
   private static long count(Connection c, String sql) throws SQLException {
     try (var statement = c.createStatement(); var result = statement.executeQuery(sql)) {
@@ -57,13 +57,13 @@ class SupabaseCheck {
           require(count(c, "SELECT count(*) FROM public.flyway_schema_history WHERE NOT success") == 0,
               "Failed Flyway migration detected; review before startup");
           require(count(c, "SELECT count(*) FROM public.flyway_schema_history WHERE script NOT IN "
-              + "('V1__initial_schema.sql','V2__seed_roles.sql','V3__corporate_route_identity.sql','V4__backend_only_platform_access.sql')") == 0,
+              + "('V1__initial_schema.sql','V2__seed_roles.sql','V3__corporate_route_identity.sql','V4__backend_only_platform_access.sql','V5__product_categories_and_contact_notifications.sql')") == 0,
               "Flyway history is not exclusive to this application; stop and review");
           migrations = count(c, "SELECT count(*) FROM public.flyway_schema_history WHERE success");
           System.out.println("Successful Flyway migrations: " + migrations);
         }
         if (mode.equals("postflight")) {
-          require(present == TABLES.size() && migrations == 4, "Expected 17 core tables and four successful migrations");
+          require(present == TABLES.size() && migrations == 5, "Expected 18 core tables and five successful migrations");
           require(count(c, "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' "
               + "AND table_name='media_files' AND column_name='data' AND data_type='bytea'") == 1,
               "Media data must use BYTEA");

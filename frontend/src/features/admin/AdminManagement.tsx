@@ -8,275 +8,15 @@ import { api, errorMessage } from '../../services/api';
 import { State } from '../../components/common/Shared';
 import Field from '../../components/common/Field';
 import { useAuth } from '../auth/AuthProvider';
+import { resources } from './AdminLayout';
+import { useAdminDialog, useAdminToast } from '../../components/admin/useAdminFeedback';
 import type { PageResult } from '../../types';
 import Pagination from './AdminPagination';
-export function Dashboard() {
-  const q = useQuery({
-    queryKey: ['admin', 'dashboard'],
-    queryFn: async () => (await api.get<Record<string, number>>('/admin/dashboard')).data,
-  });
-  const { i18n } = useTranslation();
-  return (
-    <>
-      <div className="admin-page-head">
-        <h1>{i18n.language === 'vi' ? 'Tổng quan' : 'Overview'}</h1>
-      </div>
-      <p className="notice">
-        {i18n.language === 'vi'
-          ? 'Tạo bản nháp → thêm bản dịch và hình ảnh → xem trước → xuất bản. Nội dung doanh nghiệp cần được xác nhận trước khi xuất bản.'
-          : 'Create draft → add translations and media → preview → publish. Verify company facts before publishing.'}
-      </p>
-      {q.isPending || q.isError ? (
-        <State loading={q.isPending} error={q.isError} retry={() => void q.refetch()} />
-      ) : (
-        <div className="dashboard-stats">
-          {Object.entries(q.data || {}).map(([key, value]) => (
-            <div key={key}>
-              <span>{key}</span>
-              <strong>{value}</strong>
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-type Media = {
-  id: string;
-  originalFilename: string;
-  mimeType: string;
-  fileSize: number;
-  altText: string;
-  isPublic: boolean;
-};
-export function MediaLibrary() {
-  const { t, i18n } = useTranslation();
-  const [page, setPage] = useState(0);
-  const [search, setSearch] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [editing, setEditing] = useState<Media | null>(null);
-  const queryClient = useQueryClient();
-  const schema = z.object({ altText: z.string().max(500), isPublic: z.boolean() });
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: { altText: '', isPublic: false },
-  });
-  const [file, setFile] = useState<File | null>(null);
-  const q = useQuery({
-    queryKey: ['admin', 'media', page, search],
-    queryFn: async () =>
-      (await api.get<PageResult<Media>>('/admin/media', { params: { page, search } })).data,
-  });
-  const upload = form.handleSubmit(async (v) => {
-    setError('');
-    setSuccess('');
-    if (!file) {
-      setError(i18n.language === 'vi' ? 'Vui lòng chọn tệp.' : 'Choose a file.');
-      return;
-    }
-    const body = new FormData();
-    body.append('file', file);
-    body.append('altText', v.altText);
-    body.append('isPublic', String(v.isPublic));
-    setBusy(true);
-    try {
-      await api.post('/admin/media', body);
-      await queryClient.invalidateQueries({ queryKey: ['admin'] });
-      setSuccess(t('sent'));
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
-  });
-  const download = async (id: string) => {
-    try {
-      const { data } = await api.get<Blob>(`/media/${id}`, { responseType: 'blob' });
-      const url = URL.createObjectURL(data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = q.data?.items.find((m) => m.id === id)?.originalFilename || 'media';
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  };
-  const remove = async (id: string) => {
-    if (
-      !window.confirm(
-        i18n.language === 'vi'
-          ? 'Xóa tệp này? Tệp đang được sử dụng sẽ không thể xóa.'
-          : 'Delete this file? Referenced files are protected.',
-      )
-    )
-      return;
-    try {
-      await api.delete(`/admin/media/${id}`);
-      await queryClient.invalidateQueries({ queryKey: ['admin'] });
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  };
-  return (
-    <>
-      <div className="admin-page-head">
-        <h1>{i18n.language === 'vi' ? 'Thư viện media' : 'Media library'}</h1>
-      </div>
-      <form onSubmit={upload} className="panel">
-        <div className="form-grid">
-          <Field id="mediaFile" label="JPEG / PNG / WebP ≤ 5 MB · PDF ≤ 10 MB">
-            <input
-              id="mediaFile"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-            />
-          </Field>
-          <Field id="altText" label="Alt text" error={form.formState.errors.altText?.message}>
-            <input id="altText" {...form.register('altText')} />
-          </Field>
-        </div>
-        <label className="check-field">
-          <input type="checkbox" {...form.register('isPublic')} />
-          {i18n.language === 'vi'
-            ? 'Công khai (cho phép xem không cần đăng nhập)'
-            : 'Public (visible without authentication)'}
-        </label>
-        <button className="button" disabled={busy}>
-          {busy ? t('loading') : 'Upload'}
-        </button>
-      </form>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {success && (
-        <p className="success" role="status">
-          {success}
-        </p>
-      )}
-      {editing && <MediaEdit key={editing.id} media={editing} close={() => setEditing(null)} />}
-      <div className="toolbar">
-        <input
-          className="search"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          aria-label={t('search')}
-          placeholder={t('search')}
-        />
-      </div>
-      {q.isPending || q.isError ? (
-        <State loading={q.isPending} error={q.isError} retry={() => void q.refetch()} />
-      ) : !q.data?.items.length ? (
-        <State />
-      ) : (
-        <>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>File</th>
-                  <th>Size</th>
-                  <th>Visibility</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {q.data.items.map((m) => (
-                  <tr key={m.id}>
-                    <td>
-                      {m.isPublic && m.mimeType.startsWith('image/') && (
-                        <img
-                          className="media-thumb"
-                          src={`${api.defaults.baseURL}/media/${m.id}`}
-                          alt={m.altText || m.originalFilename}
-                          width="80"
-                          height="60"
-                          loading="lazy"
-                        />
-                      )}
-                      {m.originalFilename}
-                      <small>{m.altText}</small>
-                    </td>
-                    <td>{Math.ceil(m.fileSize / 1024)} KB</td>
-                    <td>{m.isPublic ? 'Public' : 'Private'}</td>
-                    <td>
-                      <button className="text-button" onClick={() => setEditing(m)}>
-                        {t('edit')}
-                      </button>
-                      <button className="text-button" onClick={() => void download(m.id)}>
-                        Download
-                      </button>
-                      <button className="text-button" onClick={() => void remove(m.id)}>
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination page={page} setPage={setPage} total={q.data.total} size={q.data.size} />
-        </>
-      )}
-    </>
-  );
-}
-function MediaEdit({ media, close }: { media: Media; close: () => void }) {
-  const { t, i18n } = useTranslation();
-  const client = useQueryClient();
-  const [error, setError] = useState('');
-  const schema = z.object({ altText: z.string().max(500), isPublic: z.boolean() });
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: { altText: media.altText, isPublic: media.isPublic },
-  });
-  return (
-    <form
-      className="panel"
-      onSubmit={form.handleSubmit(async (values) => {
-        setError('');
-        try {
-          await api.patch(`/admin/media/${media.id}`, values);
-          await client.invalidateQueries({ queryKey: ['admin'] });
-          close();
-        } catch (e) {
-          setError(errorMessage(e));
-        }
-      })}
-    >
-      <h2>{media.originalFilename}</h2>
-      <Field id="edit-media-alt" label="Alt text" error={form.formState.errors.altText?.message}>
-        <input id="edit-media-alt" {...form.register('altText')} />
-      </Field>
-      <label className="check-field">
-        <input type="checkbox" {...form.register('isPublic')} />
-        {i18n.language === 'vi' ? 'Công khai' : 'Public'}
-      </label>
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
-      )}
-      <button className="button" disabled={form.formState.isSubmitting}>
-        {t('save')}
-      </button>
-      <button type="button" className="text-button" onClick={close}>
-        {t('cancel')}
-      </button>
-    </form>
-  );
-}
 type Raw = Record<string, unknown>;
 export function Records({ resource }: { resource: 'users' | 'contact-messages' | 'audit-logs' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { confirm, dialogNode } = useAdminDialog();
+  const { toast, toastNode } = useAdminToast();
   const auth = useAuth();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
@@ -290,46 +30,62 @@ export function Records({ resource }: { resource: 'users' | 'contact-messages' |
       (await api.get<PageResult<Raw>>(`/admin/${resource}`, { params: { page, search } })).data,
   });
   const action = async (id: string, path: string, value: string) => {
-    if (!window.confirm(`Confirm ${path}: ${value}?`)) return;
-    setError('');
-    setBusy(true);
-    try {
-      await api.patch(
-        resource === 'contact-messages'
-          ? `/admin/${resource}/${id}`
-          : `/admin/${resource}/${id}/${path}`,
-        { [path]: value },
-      );
-      await client.invalidateQueries({ queryKey: ['admin'] });
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+    await confirm(
+      i18n.language === 'vi'
+        ? `Xác nhận thay đổi ${path === 'role' ? 'quyền truy cập' : 'trạng thái'}: ${value}?`
+        : `Confirm ${path}: ${value}?`,
+      async () => {
+        setError('');
+        setBusy(true);
+        try {
+          await api.patch(
+            resource === 'contact-messages'
+              ? `/admin/${resource}/${id}`
+              : `/admin/${resource}/${id}/${path}`,
+            { [path]: value },
+          );
+          await client.invalidateQueries({ queryKey: ['admin'] });
+          toast(i18n.language === 'vi' ? 'Đã cập nhật.' : 'Updated.');
+        } catch (e) {
+          setError(errorMessage(e));
+        } finally {
+          setBusy(false);
+        }
+      },
+    );
   };
   const resetMfa = async (id: string) => {
-    if (!window.confirm('Reset MFA and revoke all sessions for this account?')) return;
-    setBusy(true);
-    setError('');
-    try {
-      await api.post(`/admin/users/${id}/reset-mfa`);
-      await client.invalidateQueries({ queryKey: ['admin'] });
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+    await confirm(
+      i18n.language === 'vi'
+        ? 'Đặt lại MFA và thu hồi mọi phiên đăng nhập của tài khoản này?'
+        : 'Reset MFA and revoke all sessions for this account?',
+      async () => {
+        setBusy(true);
+        setError('');
+        try {
+          await api.post(`/admin/users/${id}/reset-mfa`);
+          await client.invalidateQueries({ queryKey: ['admin'] });
+          toast(i18n.language === 'vi' ? 'Đã cập nhật.' : 'Updated.');
+        } catch (e) {
+          setError(errorMessage(e));
+        } finally {
+          setBusy(false);
+        }
+      },
+    );
   };
   const columns =
     resource === 'users'
       ? ['name', 'email', 'status', 'roles']
       : resource === 'contact-messages'
-        ? ['full_name', 'email', 'subject', 'status']
+        ? ['full_name', 'email', 'subject', 'status', 'notification_status']
         : ['timestamp', 'action', 'entity_type', 'entity_id'];
   return (
     <>
+      {dialogNode}
+      {toastNode}
       <div className="admin-page-head">
-        <h1>{resource.replaceAll('-', ' ')}</h1>
+        <h1>{i18n.language === 'vi' ? resources[resource] : resource.replaceAll('-', ' ')}</h1>
       </div>
       {resource === 'users' && <CreateUser />}
       {error && (
@@ -360,9 +116,26 @@ export function Records({ resource }: { resource: 'users' | 'contact-messages' |
               <thead>
                 <tr>
                   {columns.map((c) => (
-                    <th key={c}>{c}</th>
+                    <th key={c}>
+                      {(
+                        {
+                          name: t('name'),
+                          email: t('email'),
+                          full_name: t('name'),
+                          subject: t('subject'),
+                          notification_status:
+                            i18n.language === 'vi' ? 'Email thông báo' : 'Email notification',
+                          status: t('status'),
+                          roles: i18n.language === 'vi' ? 'Vai trò' : 'Roles',
+                          timestamp: i18n.language === 'vi' ? 'Thời điểm' : 'Timestamp',
+                          action: i18n.language === 'vi' ? 'Thao tác' : 'Action',
+                          entity_type: i18n.language === 'vi' ? 'Đối tượng' : 'Entity',
+                          entity_id: 'ID',
+                        } as Record<string, string>
+                      )[c] || c}
+                    </th>
                   ))}
-                  <th>Actions</th>
+                  <th>{i18n.language === 'vi' ? 'Thao tác' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -370,7 +143,25 @@ export function Records({ resource }: { resource: 'users' | 'contact-messages' |
                   <tr key={String(row.id)}>
                     {columns.map((c) => (
                       <td key={c}>
-                        {Array.isArray(row[c]) ? row[c].join(', ') : String(row[c] || '—')}
+                        {c === 'notification_status' ? (
+                          <span
+                            className={`status ${row[c] === 'SENT' ? 'published' : row[c] === 'FAILED' ? 'archived' : 'draft'}`}
+                          >
+                            {(
+                              {
+                                SENT: i18n.language === 'vi' ? 'Đã gửi' : 'Sent',
+                                PENDING: i18n.language === 'vi' ? 'Chờ gửi' : 'Pending',
+                                RETRY: i18n.language === 'vi' ? 'Chờ gửi lại' : 'Retrying',
+                                FAILED: i18n.language === 'vi' ? 'Gửi thất bại' : 'Failed',
+                                DISABLED: i18n.language === 'vi' ? 'Chưa bật' : 'Disabled',
+                              } as Record<string, string>
+                            )[String(row[c])] || '—'}
+                          </span>
+                        ) : Array.isArray(row[c]) ? (
+                          row[c].join(', ')
+                        ) : (
+                          String(row[c] || '—')
+                        )}
                       </td>
                     ))}
                     <td>
@@ -390,7 +181,13 @@ export function Records({ resource }: { resource: 'users' | 'contact-messages' |
                               )
                             }
                           >
-                            {row.status === 'ACTIVE' ? 'Disable' : 'Enable'}
+                            {row.status === 'ACTIVE'
+                              ? i18n.language === 'vi'
+                                ? 'Vô hiệu hóa'
+                                : 'Disable'
+                              : i18n.language === 'vi'
+                                ? 'Kích hoạt'
+                                : 'Enable'}
                           </button>
                           {auth.user?.roles.includes('SUPER_ADMIN') &&
                             String(row.id) !== auth.user.id && (
@@ -399,7 +196,7 @@ export function Records({ resource }: { resource: 'users' | 'contact-messages' |
                                 className="text-button"
                                 onClick={() => void resetMfa(String(row.id))}
                               >
-                                Reset MFA
+                                {i18n.language === 'vi' ? 'Đặt lại MFA' : 'Reset MFA'}
                               </button>
                             )}
                           {auth.user?.roles.includes('SUPER_ADMIN') && (
@@ -532,10 +329,11 @@ export function Settings() {
     queryKey: ['admin', 'settings'],
     queryFn: async () => (await api.get<Record<string, string>>('/admin/settings')).data,
   });
+  const { i18n } = useTranslation();
   return (
     <>
       <div className="admin-page-head">
-        <h1>Settings</h1>
+        <h1>{i18n.language === 'vi' ? 'Cài đặt' : 'Settings'}</h1>
       </div>
       {q.isPending || q.isError ? (
         <State loading={q.isPending} error={q.isError} retry={() => void q.refetch()} />
@@ -550,7 +348,7 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
   const vi = i18n.language === 'vi';
   const client = useQueryClient();
   const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
+  const { toast, toastNode } = useAdminToast();
   const url = z.union([
     z.literal(''),
     z
@@ -566,6 +364,7 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
     contactEmail: z.union([z.literal(''), z.string().email().max(254)]),
     contactPhone: z.string().max(40),
     contactAddress: z.string().max(1000),
+    contactFax: z.string().max(40),
     officeHours: z.string().max(200),
     facebookUrl: url,
     linkedinUrl: url,
@@ -575,6 +374,7 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
     'contactEmail',
     'contactPhone',
     'contactAddress',
+    'contactFax',
     'officeHours',
     'facebookUrl',
     'linkedinUrl',
@@ -585,11 +385,21 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
         'Email liên hệ',
         'Điện thoại',
         'Địa chỉ',
+        'Fax',
         'Giờ làm việc',
         'Facebook',
         'LinkedIn',
       ]
-    : ['Company name', 'Contact email', 'Phone', 'Address', 'Office hours', 'Facebook', 'LinkedIn'];
+    : [
+        'Company name',
+        'Contact email',
+        'Phone',
+        'Address',
+        'Fax',
+        'Office hours',
+        'Facebook',
+        'LinkedIn',
+      ];
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: Object.fromEntries(keys.map((key) => [key, data[key] || ''])),
@@ -599,11 +409,11 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
       className="panel"
       onSubmit={form.handleSubmit(async (values) => {
         setError('');
-        setSaved(false);
+
         try {
           await api.put('/admin/settings', values);
           await client.invalidateQueries({ queryKey: ['site'] });
-          setSaved(true);
+          toast(vi ? 'Đã lưu cài đặt.' : 'Settings saved.');
         } catch (e) {
           setError(errorMessage(e));
         }
@@ -619,11 +429,7 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
           {error}
         </p>
       )}
-      {saved && (
-        <p className="success" role="status">
-          {t('sent')}
-        </p>
-      )}
+      {toastNode}
       <button className="button" disabled={form.formState.isSubmitting}>
         {t('save')}
       </button>
@@ -631,6 +437,7 @@ function SettingsForm({ data }: { data: Record<string, string> }) {
   );
 }
 export function Roles() {
+  const { i18n } = useTranslation();
   const q = useQuery({
     queryKey: ['admin', 'roles'],
     queryFn: async () => (await api.get<string[]>('/admin/roles')).data,
@@ -638,11 +445,12 @@ export function Roles() {
   return (
     <>
       <div className="admin-page-head">
-        <h1>Roles</h1>
+        <h1>{i18n.language === 'vi' ? 'Phân quyền' : 'Permissions'}</h1>
       </div>
       <p className="notice">
-        Role changes are managed under Users. SUPER_ADMIN + MFA + recent authentication required.
-        The last active SUPER_ADMIN cannot be demoted or disabled.
+        {i18n.language === 'vi'
+          ? 'Thay đổi vai trò tại Người dùng. Thao tác yêu cầu SUPER_ADMIN, MFA và đăng nhập gần đây. Không thể hạ quyền hoặc vô hiệu hóa SUPER_ADMIN hoạt động cuối cùng.'
+          : 'Manage roles under Users. Changes require SUPER_ADMIN, MFA and recent authentication. The last active SUPER_ADMIN cannot be demoted or disabled.'}
       </p>
       {q.isPending || q.isError ? (
         <State loading={q.isPending} error={q.isError} />

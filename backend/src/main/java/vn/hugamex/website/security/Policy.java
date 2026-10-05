@@ -26,6 +26,7 @@ public class Policy {
   }
 
   public boolean cms(Authentication auth, String kind) {
+    if (kind.equals("HERO")) return false;
     Actor a = actor(auth);
     return a.has("SUPER_ADMIN") && a.mfaVerified()
         || a.has("ADMIN") && a.mfaVerified()

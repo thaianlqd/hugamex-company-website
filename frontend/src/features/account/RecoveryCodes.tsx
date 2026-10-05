@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAdminDialog } from '../../components/admin/useAdminFeedback';
 import { api, errorMessage } from '../../services/api';
 
 export default function RecoveryCodes() {
   const { i18n } = useTranslation();
   const vi = i18n.language === 'vi';
+  const { confirm, dialogNode } = useAdminDialog();
   const [codes, setCodes] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const regenerate = async () => {
     if (
-      !window.confirm(
+      !(await confirm(
         vi
           ? 'Tạo bộ mã mới sẽ vô hiệu hóa tất cả mã khôi phục cũ. Tiếp tục?'
           : 'Generating new codes invalidates every previous recovery code. Continue?',
-      )
+      ))
     )
       return;
     setError('');
@@ -30,6 +32,7 @@ export default function RecoveryCodes() {
   };
   return (
     <section className="account-security">
+      {dialogNode}
       <h2>{vi ? 'Mã khôi phục MFA' : 'MFA recovery codes'}</h2>
       <p>
         {vi

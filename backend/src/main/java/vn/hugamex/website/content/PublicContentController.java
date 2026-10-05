@@ -20,7 +20,7 @@ public class PublicContentController {
   }
 
   @GetMapping(
-      "/{resource:posts|pages|branches|products|partners|certifications|categories|hero-slides}")
+      "/{resource:posts|pages|branches|products|partners|certifications|categories|product-categories|hero-slides}")
   PageResult<ContentDto> list(
       @PathVariable String resource,
       @RequestParam(defaultValue = "vi") String locale,

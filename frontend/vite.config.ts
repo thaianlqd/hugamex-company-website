@@ -11,12 +11,29 @@ export default defineConfig(({ mode }) => ({
     strictPort: true,
     proxy: {
       '/sitemap.xml': {
-        target: 'http://127.0.0.1:8080',
+        target: process.env.HUGAMEX_QA_BACKEND || 'http://127.0.0.1:8080',
         rewrite: () => '/api/v1/public/sitemap.xml',
       },
-      '/api': 'http://127.0.0.1:8080',
-      '/oauth2': 'http://127.0.0.1:8080',
-      '/login/oauth2': 'http://127.0.0.1:8080',
+      '/api': process.env.HUGAMEX_QA_BACKEND || 'http://127.0.0.1:8080',
+      '/oauth2': process.env.HUGAMEX_QA_BACKEND || 'http://127.0.0.1:8080',
+      '/login/oauth2': process.env.HUGAMEX_QA_BACKEND || 'http://127.0.0.1:8080',
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (['/node_modules/react/', '/node_modules/react-dom/', '/node_modules/scheduler/'].some(name => id.includes(name))) return 'react-vendor';
+          if (
+            [
+              '/node_modules/framer-motion/',
+              '/node_modules/motion-dom/',
+              '/node_modules/motion-utils/',
+            ].some((name) => id.includes(name))
+          )
+            return 'motion';
+        },
+      },
     },
   },
   test: {

@@ -1,0 +1,239 @@
+{
+  "checkedAt": "2026-10-05T10:54:47.950Z",
+  "public": [
+    {
+      "label": "home-375",
+      "overflow": false
+    },
+    {
+      "label": "about-375",
+      "overflow": false
+    },
+    {
+      "label": "news-375",
+      "overflow": false
+    },
+    {
+      "label": "article-375",
+      "overflow": false
+    },
+    {
+      "label": "home-390",
+      "overflow": false
+    },
+    {
+      "label": "about-390",
+      "overflow": false
+    },
+    {
+      "label": "news-390",
+      "overflow": false
+    },
+    {
+      "label": "article-390",
+      "overflow": false
+    },
+    {
+      "label": "home-430",
+      "overflow": false
+    },
+    {
+      "label": "about-430",
+      "overflow": false
+    },
+    {
+      "label": "news-430",
+      "overflow": false
+    },
+    {
+      "label": "article-430",
+      "overflow": false
+    },
+    {
+      "label": "home-768",
+      "overflow": false
+    },
+    {
+      "label": "about-768",
+      "overflow": false
+    },
+    {
+      "label": "news-768",
+      "overflow": false
+    },
+    {
+      "label": "article-768",
+      "overflow": false
+    },
+    {
+      "label": "home-1024",
+      "overflow": false
+    },
+    {
+      "label": "about-1024",
+      "overflow": false
+    },
+    {
+      "label": "news-1024",
+      "overflow": false
+    },
+    {
+      "label": "article-1024",
+      "overflow": false
+    },
+    {
+      "label": "home-1280",
+      "overflow": false
+    },
+    {
+      "label": "about-1280",
+      "overflow": false
+    },
+    {
+      "label": "news-1280",
+      "overflow": false
+    },
+    {
+      "label": "article-1280",
+      "overflow": false
+    },
+    {
+      "label": "home-1440",
+      "overflow": false
+    },
+    {
+      "label": "about-1440",
+      "overflow": false
+    },
+    {
+      "label": "news-1440",
+      "overflow": false
+    },
+    {
+      "label": "article-1440",
+      "overflow": false
+    },
+    {
+      "label": "network-390",
+      "overflow": false
+    },
+    {
+      "label": "capabilities-390",
+      "overflow": false
+    },
+    {
+      "label": "contact-390",
+      "overflow": false
+    },
+    {
+      "label": "network-1440",
+      "overflow": false
+    },
+    {
+      "label": "capabilities-1440",
+      "overflow": false
+    },
+    {
+      "label": "contact-1440",
+      "overflow": false
+    },
+    {
+      "label": "/gioi-thieu/lich-su",
+      "overflow": false
+    },
+    {
+      "label": "/gioi-thieu/tam-nhin-su-menh",
+      "overflow": false
+    },
+    {
+      "label": "/nang-luc-san-xuat",
+      "overflow": false
+    },
+    {
+      "label": "/phat-trien-ben-vung",
+      "overflow": false
+    },
+    {
+      "label": "/tuyen-dung",
+      "overflow": false
+    },
+    {
+      "label": "/chinh-sach-bao-mat",
+      "overflow": false
+    },
+    {
+      "label": "/san-pham",
+      "overflow": false
+    },
+    {
+      "label": "/he-thong",
+      "overflow": false
+    },
+    {
+      "label": "/doi-tac",
+      "overflow": false
+    },
+    {
+      "label": "/chung-nhan",
+      "overflow": false
+    },
+    {
+      "label": "/lien-he",
+      "overflow": false
+    }
+  ],
+  "admin": [
+    {
+      "label": "admin-login-390",
+      "overflow": false
+    },
+    {
+      "label": "admin-login-1440",
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "public-article-desktop",
+      "violations": []
+    },
+    {
+      "name": "public-network-390",
+      "violations": []
+    },
+    {
+      "name": "public-capabilities-390",
+      "violations": []
+    },
+    {
+      "name": "public-contact-390",
+      "violations": []
+    },
+    {
+      "name": "public-quick-contact-390",
+      "violations": []
+    },
+    {
+      "name": "public-network-1440",
+      "violations": []
+    },
+    {
+      "name": "public-capabilities-1440",
+      "violations": []
+    },
+    {
+      "name": "public-contact-1440",
+      "violations": []
+    },
+    {
+      "name": "public-quick-contact-1440",
+      "violations": []
+    },
+    {
+      "name": "admin-login-desktop",
+      "violations": []
+    }
+  ],
+  "consoleErrors": [],
+  "mutationsBlocked": 0
+}
