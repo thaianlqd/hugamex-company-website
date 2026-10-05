@@ -98,7 +98,12 @@ public class AuthService {
         purpose,
         crypto.otpHash(id, email, purpose, code),
         java.sql.Timestamp.from(clock.instant().plusSeconds(300)));
-    mail.send(email, purpose, id, code);
+    try {
+      mail.send(email, purpose, id, code);
+    } catch (EmailDeliveryException e) {
+      // SMTP failures must not reveal account existence through different API error statuses.
+      // The provider already emits a safe warning. Keep cooldown/hash/expiry controls intact.
+    }
     return new Challenge(id, "If eligible, an email has been sent.");
   }
 

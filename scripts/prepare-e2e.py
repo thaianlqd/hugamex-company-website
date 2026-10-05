@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json,secrets,uuid,os
+import json,secrets,uuid,os,re
 r=Path(__file__).resolve().parents[1]
 env=r/'backend/.env'
 if not env.exists():raise SystemExit('Run setup-local.py first.')
 if 'SPRING_PROFILES_ACTIVE=dev' not in env.read_text():raise SystemExit('This helper is for the dev profile only.')
+if not re.search(r"^DATABASE_URL=['\"]?jdbc:postgresql://(?:127\.0\.0\.1|localhost):5432/hugamex['\"]?$",env.read_text(),re.M):
+ raise SystemExit('QA bootstrap is restricted to the local Docker database; never use it with Supabase.')
 d=r/'.local';d.mkdir(exist_ok=True);os.chmod(d,0o700)
 f=d/'e2e.json'
 if f.exists():raise SystemExit('Existing E2E fixture preserved.')

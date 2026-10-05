@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { Seo, State } from '../../components/common/Shared';
 import MfaGate from '../auth/MfaGate';
 import { useTranslation } from 'react-i18next';
+import { portalUrl } from '../../app/portals';
 export const resources: Record<string, string> = {
   posts: 'Bài viết',
   categories: 'Danh mục',
@@ -74,6 +75,9 @@ export default function AdminLayout() {
               {i18n.language === 'vi' ? label : key.replaceAll('-', ' ')}
             </NavLink>
           ))}
+          <a href={portalUrl('public') || '/'}>
+            {i18n.language === 'vi' ? 'Trang khách hàng' : 'Public website'}
+          </a>
         </nav>
       </dialog>
       <aside className="admin-sidebar">
@@ -95,10 +99,10 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <NavLink to="/" className="admin-public">
+        <a href={portalUrl('public') || '/'} className="admin-public">
           {t('home')}
           <ArrowUpRight size={16} />
-        </NavLink>
+        </a>
       </aside>
       <div className="admin-main">
         <header className="admin-topbar">

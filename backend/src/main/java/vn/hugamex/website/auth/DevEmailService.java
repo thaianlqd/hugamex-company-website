@@ -3,11 +3,13 @@ package vn.hugamex.website.auth;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
 @Profile({"dev", "test"})
+@ConditionalOnProperty(name = "app.mail-mode", havingValue = "file", matchIfMissing = true)
 public class DevEmailService implements EmailService {
   public void send(String email, String purpose, UUID id, String code) {
     try {

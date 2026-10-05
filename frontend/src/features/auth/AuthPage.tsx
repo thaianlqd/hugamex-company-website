@@ -9,6 +9,7 @@ import { useAuth } from './AuthProvider';
 import { api, csrf, errorMessage } from '../../services/api';
 import { Seo } from '../../components/common/Shared';
 import Field from '../../components/common/Field';
+import { appSurface } from '../../app/portals';
 export default function AuthPage() {
   const location = useLocation();
   return location.pathname === '/xac-thuc-email' || location.pathname === '/dat-lai-mat-khau' ? (
@@ -65,7 +66,7 @@ function CredentialsPage() {
         });
       } else {
         await auth.login(values.email, values.password);
-        navigate('/tai-khoan');
+        navigate(appSurface === 'admin' ? '/admin' : '/tai-khoan');
       }
     } catch (e) {
       setError(errorMessage(e));
@@ -74,7 +75,7 @@ function CredentialsPage() {
   return (
     <div className="auth-card">
       <Seo title={title} path={pathname} />
-      <div className="eyebrow">HUGAMEX / ACCOUNT</div>
+      <div className="eyebrow">HUGAMEX / {appSurface === 'admin' ? 'ADMIN' : 'ACCOUNT'}</div>
       <h1>{title}</h1>
       {search.includes('oauth=') && (
         <p className="notice">
@@ -141,7 +142,7 @@ function CredentialsPage() {
       )}
       <div className="auth-links">
         <Link to="/dang-nhap">{t('login')}</Link>
-        <Link to="/dang-ky">{t('register')}</Link>
+        {appSurface !== 'admin' && <Link to="/dang-ky">{t('register')}</Link>}
         <Link to="/quen-mat-khau">{t('forgot')}</Link>
         <Link to="/xac-thuc-email">{t('verify')}</Link>
       </div>

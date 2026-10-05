@@ -1,2 +1,3 @@
 app:
   secure-cookies: false
+  mail-mode: file

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
@@ -69,6 +70,7 @@ class PostgresIntegrationTest {
   @Autowired PasswordEncoder encoder;
   @Autowired AdminUserService users;
   @Autowired GoogleService google;
+  @MockitoSpyBean EmailService mail;
   String password = "Test password phrase 2026";
 
   @BeforeEach
@@ -117,6 +119,55 @@ class PostgresIntegrationTest {
   AuthService.Challenge register(String email) {
     return auth.register(
         new AuthRequests.Register(email, password, "Test fixture"), UUID.randomUUID().toString());
+  }
+
+  @Test
+  void authSendsPurposeBoundOtpThroughSelectedEmailService() {
+    String address = UUID.randomUUID() + "@example.invalid";
+    var verification = register(address);
+    org.mockito.Mockito.verify(mail)
+        .send(
+            org.mockito.ArgumentMatchers.eq(address),
+            org.mockito.ArgumentMatchers.eq("EMAIL_VERIFICATION"),
+            org.mockito.ArgumentMatchers.eq(verification.challengeId()),
+            org.mockito.ArgumentMatchers.matches("\\d{6}"));
+    var reset =
+        auth.send(
+            new AuthRequests.EmailOnly(address), "PASSWORD_RESET", UUID.randomUUID().toString());
+    org.mockito.Mockito.verify(mail)
+        .send(
+            org.mockito.ArgumentMatchers.eq(address),
+            org.mockito.ArgumentMatchers.eq("PASSWORD_RESET"),
+            org.mockito.ArgumentMatchers.eq(reset.challengeId()),
+            org.mockito.ArgumentMatchers.matches("\\d{6}"));
+  }
+
+  @Test
+  void smtpFailureDoesNotExposeExistingAccountInForgotPasswordResponse() {
+    UUID id = user("USER");
+    org.mockito.Mockito.doThrow(new EmailDeliveryException())
+        .when(mail)
+        .send(
+            org.mockito.ArgumentMatchers.anyString(),
+            org.mockito.ArgumentMatchers.eq("PASSWORD_RESET"),
+            org.mockito.ArgumentMatchers.any(UUID.class),
+            org.mockito.ArgumentMatchers.anyString());
+    var existing =
+        auth.send(
+            new AuthRequests.EmailOnly(email(id)), "PASSWORD_RESET", UUID.randomUUID().toString());
+    var missing =
+        auth.send(
+            new AuthRequests.EmailOnly(UUID.randomUUID() + "@example.invalid"),
+            "PASSWORD_RESET",
+            UUID.randomUUID().toString());
+    assertEquals(missing.message(), existing.message());
+    assertNotNull(existing.challengeId());
+    assertEquals(
+        1L,
+        db.queryForObject(
+            "SELECT count(*) FROM email_otp_challenges WHERE id=? AND purpose='PASSWORD_RESET' AND reset_token_hash IS NULL AND attempts=0 AND expires_at>now()",
+            Long.class,
+            existing.challengeId()));
   }
 
   ContentRequests.Save articleFixture(String slug) {

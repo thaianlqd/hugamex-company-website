@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite --host 127.0.0.1 --mode public",
+    "dev:admin": "vite --host 127.0.0.1 --mode admin",
     "build": "tsc -b && vite build",
+    "build:admin": "tsc -b && vite build --mode admin --outDir dist-admin",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
     "format": "prettier --write src",

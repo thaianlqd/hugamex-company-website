@@ -2,6 +2,7 @@ import {readFileSync,writeFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 if(!readFileSync(resolve(root,'backend/.env'),'utf8').includes('SPRING_PROFILES_ACTIVE=dev'))throw new Error('Development profile required.');
+if(!/^DATABASE_URL=['"]?jdbc:postgresql:\/\/(?:127\.0\.0\.1|localhost):5432\/hugamex['"]?$/m.test(readFileSync(resolve(root,'backend/.env'),'utf8')))throw new Error('Seed is restricted to the local Docker database; never use it with Supabase.');
 const fixturePath=resolve(root,'.local/e2e.json');
 const fixture=JSON.parse(readFileSync(fixturePath,'utf8'));
 const statePath=resolve(root,'.local/seed-state.json');

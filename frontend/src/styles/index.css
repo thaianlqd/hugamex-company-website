@@ -852,6 +852,11 @@ input.search {
   .header-actions > a {
     display: none;
   }
+  .admin-auth-header .header-actions > a {
+    display: flex;
+    font-size: 12px;
+    max-width: 90px;
+  }
   .hero {
     display: flex;
     flex-direction: column;

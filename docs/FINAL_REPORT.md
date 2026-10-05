@@ -1,6 +1,6 @@
 # Local handover — HUGAMEX
 
-2026-10-05. The local application and CMS are implemented; external service configuration and verified business content remain pending. Nothing has been deployed, published to production or connected to a live Google/Supabase/SMTP account.
+2026-10-05 initial handover. The local application and CMS are implemented. Subsequent Supabase/Gmail work, separate public/admin frontends (5173/5180), and verified Supabase owner creation are recorded in [SUPABASE_SMTP_REPORT](SUPABASE_SMTP_REPORT.md). Current run instructions and private credential location are in README. Nothing has been deployed or published to production.
 
 ## 1. What was implemented
 
@@ -89,6 +89,6 @@ Root `.env`, `backend/.env`, optional frontend `.env` files; `.local/` QA creden
 - Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
 - Production: `SPRING_PROFILES_ACTIVE=prod`; independent `JWT_SIGNING_KEY`, `TOKEN_HASH_KEY`, `OTP_HMAC_KEY`, `MFA_ENCRYPTION_KEY`; `CORS_ALLOWED_ORIGINS`, `FRONTEND_URL`; SMTP_HOST/PORT/USERNAME/PASSWORD and MAIL_FROM.
 - Frontend: `VITE_APP_ENV=production`, `VITE_SITE_URL`, same-origin `VITE_API_BASE_URL=/api/v1`.
-- One-time owner bootstrap only: BOOTSTRAP_ADMIN_EMAIL/PASSWORD, removed after initial creation. Dev uses DEV_MAIL_MODE=file; never enable file delivery for prod.
+- One-time owner bootstrap only: BOOTSTRAP_ADMIN_EMAIL/PASSWORD, removed after initial creation. `MAIL_MODE=file` is restricted to dev/test; `MAIL_MODE=smtp` supports dev/prod and requires SMTP settings. The legacy DEV_MAIL_MODE name has been replaced.
 
 No Supabase service-role/anon key is needed in frontend. Local values already exist and are not production credentials.

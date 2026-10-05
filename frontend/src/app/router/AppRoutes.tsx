@@ -1,5 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { Route, Routes, Link } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Route, Routes, Link, Navigate, useLocation } from 'react-router-dom';
+import { appSurface, portalUrl, type Surface } from '../portals';
+const AdminAuthLayout = lazy(() => import('../layouts/AdminAuthLayout'));
 import { Seo, State } from '../../components/common/Shared';
 const PublicLayout = lazy(() => import('../../app/layouts/PublicLayout'));
 const Home = lazy(() => import('../../pages/Home'));
@@ -49,48 +51,69 @@ const publicPaths = [
   'doi-tac/:slug',
   'chung-nhan/:slug',
 ];
-export default function AppRoutes() {
+function PortalRedirect({ surface }: { surface: Surface }) {
+  const { pathname, search, hash } = useLocation();
+  const url = portalUrl(surface, pathname + search + hash);
+  useEffect(() => {
+    if (url) window.location.replace(url);
+  }, [url]);
+  return url ? <State loading /> : <NotFound />;
+}
+function NotFound() {
+  return (
+    <div className="page-body">
+      <Seo title="404" path="/404" noIndex />
+      <h1>404</h1>
+      <p>Trang không tồn tại / Page not found</p>
+      <Link className="arrow-link" to="/">
+        HUGAMEX / Home
+      </Link>
+    </div>
+  );
+}
+export default function AppRoutes({ surface = appSurface }: { surface?: Surface }) {
+  const admin = surface === 'admin';
   return (
     <Suspense fallback={<State loading />}>
       <Routes>
-        <Route element={<PublicLayout />}>
-          <Route index element={<Home />} />
-          {publicPaths.map((p) => (
-            <Route key={p} path={p} element={<PublicContent />} />
-          ))}
-          <Route path="lien-he" element={<ContactPage />} />
-          {['dang-nhap', 'dang-ky', 'xac-thuc-email', 'quen-mat-khau', 'dat-lai-mat-khau'].map(
-            (p) => (
-              <Route key={p} path={p} element={<AuthPage />} />
-            ),
+        <Route element={admin ? <AdminAuthLayout /> : <PublicLayout />}>
+          <Route index element={admin ? <Navigate to="/admin" replace /> : <Home />} />
+          {!admin && (
+            <>
+              {publicPaths.map((p) => (
+                <Route key={p} path={p} element={<PublicContent />} />
+              ))}
+              <Route path="lien-he" element={<ContactPage />} />
+            </>
           )}
+          {admin && <Route path="dang-ky" element={<PortalRedirect surface="public" />} />}
+          {[
+            'dang-nhap',
+            ...(!admin ? ['dang-ky'] : []),
+            'xac-thuc-email',
+            'quen-mat-khau',
+            'dat-lai-mat-khau',
+          ].map((p) => (
+            <Route key={p} path={p} element={<AuthPage />} />
+          ))}
           <Route path="tai-khoan" element={<AccountPage />} />
-          <Route
-            path="*"
-            element={
-              <div className="page-body">
-                <Seo title="404" path="/404" noIndex />
-                <h1>404</h1>
-                <p>Trang không tồn tại / Page not found</p>
-                <Link className="arrow-link" to="/">
-                  HUGAMEX / Home
-                </Link>
-              </div>
-            }
-          />
+          <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="media" element={<MediaLibrary />} />
-          <Route path="homepage" element={<HomepageSettings />} />
-          <Route path="contact-messages" element={<Records resource="contact-messages" />} />
-          <Route path="users" element={<Records resource="users" />} />
-          <Route path="audit-logs" element={<Records resource="audit-logs" />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="roles" element={<Roles />} />
-          <Route path=":resource" element={<AdminContentList />} />
-          <Route path=":resource/:id" element={<AdminContentEditor />} />
-        </Route>
+        {!admin && <Route path="admin/*" element={<PortalRedirect surface="admin" />} />}
+        {admin && (
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="media" element={<MediaLibrary />} />
+            <Route path="homepage" element={<HomepageSettings />} />
+            <Route path="contact-messages" element={<Records resource="contact-messages" />} />
+            <Route path="users" element={<Records resource="users" />} />
+            <Route path="audit-logs" element={<Records resource="audit-logs" />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="roles" element={<Roles />} />
+            <Route path=":resource" element={<AdminContentList />} />
+            <Route path=":resource/:id" element={<AdminContentEditor />} />
+          </Route>
+        )}
       </Routes>
     </Suspense>
   );
