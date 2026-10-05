@@ -1,0 +1,108 @@
+[
+  {
+    "viewport": "mobile",
+    "scores": {
+      "performance": 81,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 92
+    },
+    "metrics": {
+      "first-contentful-paint": "2.3 s",
+      "largest-contentful-paint": "4.7 s",
+      "total-blocking-time": "20 ms",
+      "cumulative-layout-shift": "0.035"
+    },
+    "runtimeError": null,
+    "warnings": [],
+    "failedAudits": [
+      {
+        "id": "first-contentful-paint",
+        "title": "First Contentful Paint"
+      },
+      {
+        "id": "largest-contentful-paint",
+        "title": "Largest Contentful Paint"
+      },
+      {
+        "id": "first-meaningful-paint",
+        "title": "First Meaningful Paint"
+      },
+      {
+        "id": "speed-index",
+        "title": "Speed Index"
+      },
+      {
+        "id": "interactive",
+        "title": "Time to Interactive"
+      },
+      {
+        "id": "prioritize-lcp-image",
+        "title": "Preload Largest Contentful Paint image"
+      },
+      {
+        "id": "uses-long-cache-ttl",
+        "title": "Serve static assets with an efficient cache policy"
+      },
+      {
+        "id": "render-blocking-resources",
+        "title": "Eliminate render-blocking resources"
+      },
+      {
+        "id": "unused-javascript",
+        "title": "Reduce unused JavaScript"
+      },
+      {
+        "id": "modern-image-formats",
+        "title": "Serve images in next-gen formats"
+      },
+      {
+        "id": "uses-responsive-images",
+        "title": "Properly size images"
+      },
+      {
+        "id": "is-crawlable",
+        "title": "Page is blocked from indexing"
+      }
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "scores": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 91
+    },
+    "metrics": {
+      "first-contentful-paint": "0.1 s",
+      "largest-contentful-paint": "0.5 s",
+      "total-blocking-time": "0 ms",
+      "cumulative-layout-shift": "0.012"
+    },
+    "runtimeError": null,
+    "warnings": [],
+    "failedAudits": [
+      {
+        "id": "mainthread-work-breakdown",
+        "title": "Minimizes main-thread work"
+      },
+      {
+        "id": "bootup-time",
+        "title": "JavaScript execution time"
+      },
+      {
+        "id": "uses-long-cache-ttl",
+        "title": "Serve static assets with an efficient cache policy"
+      },
+      {
+        "id": "render-blocking-resources",
+        "title": "Eliminate render-blocking resources"
+      },
+      {
+        "id": "is-crawlable",
+        "title": "Page is blocked from indexing"
+      }
+    ]
+  }
+]

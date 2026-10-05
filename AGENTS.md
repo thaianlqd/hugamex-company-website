@@ -1,0 +1,12 @@
+# HUGAMEX engineering rules
+- React 19/Vite/strict TypeScript frontend; Java 21/Spring Boot 3 monolith; Supabase PostgreSQL. Do not replace backend with Node or introduce microservices.
+- Browser only accesses Spring REST `/api/v1`; never access business data with Supabase clients. Use DTOs, package by domain, bounded pagination, server validation.
+- Access JWT only in memory; refresh cookie HttpOnly/Secure in production, rotate and store only keyed digests. Cookie endpoints require CSRF. No secrets, OTPs, tokens or sensitive request bodies in logs or git.
+- USER account only; EDITOR editorial content/media; ADMIN business CMS/users excluding privileged accounts; SUPER_ADMIN role/security/audit control. Authorize backend-side. ADMIN/SUPER_ADMIN must complete TOTP. Protect the last active SUPER_ADMIN under a database lock; role/security changes require recent authentication.
+- Media binary MUST be PostgreSQL BYTEA, never @Lob/OID. Enforce MIME, extension, signature and size; protect private media and referenced deletion.
+- Use Flyway migrations, deterministic seeds, UUID/UTC, ddl-auto=validate. Do not modify applied migrations.
+- Structured TipTap JSON only, allowlisted nodes/attributes; no raw HTML/JS/CSS injection. VI/EN translation tables, never duplicate entities per language.
+- Modern corporate × fashion editorial × manufacturing. Burgundy #7A1E2C, warm white, generous space, thin borders. No SaaS card wall, 3D, neon or excessive gradients. Respect reduced motion, keyboard and mobile.
+- Never invent company facts, partners, certifications or metrics. Unapproved content is marked TODO_CLIENT_CONTENT / PLACEHOLDER CONTENT — REQUIRES CLIENT APPROVAL.
+- Unit + PostgreSQL integration + frontend + Playwright tests. Fix failures, do not remove checks or security for green builds. Record actual executed and unavailable checks separately.
+- Preserve unrelated changes. No deployment, production push, DNS change or live SMTP until explicitly requested.
